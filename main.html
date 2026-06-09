@@ -317,7 +317,6 @@ BSCpE III - 1
                 </table></div>
             </div>
         </section>
-
     </main>
 
     <script>
@@ -333,7 +332,7 @@ BSCpE III - 1
         let registeredSections = ["BSCpE I", "BSCpE II", "BSCpE III - 1", "BSCpE IV-1", "BSIT II - A", "BSCS I - B"].sort();
 
         let registeredFaculty = [
-            "Abad, Loren Rose A.", "Abalorio, Rhea Joyce L.", "Abrajano, Marcia D.", "Abrera, Fedeliza O.",
+            "TBA", "Abad, Loren Rose A.", "Abalorio, Rhea Joyce L.", "Abrajano, Marcia D.", "Abrera, Fedeliza O.",
             "Abrian, April Rose M.", "Abrugar, Absalon O.", "Abrugar, Eva D.", "Abud, Ma. Rosario P.",
             "Abulencia, Arthur III B.", "Acebo, Joseph G.", "Aguedan, Rizza Isabelle S.", "Alburo, Hershey R.",
             "Alvarez, Ma. Elena O.", "Anire, Marcel G.", "Araneta, Arvin Anthony S.", "Arma, Leonilo A.",
@@ -358,17 +357,23 @@ BSCpE III - 1
             "Yañez, Yanze Makarius T.", "Yanga, Noel A."
         ].sort();
 
-        // New Managed Rooms In-Memory Database List 
         let registeredRooms = ["COE Lab 1", "CCS IT-Lab", "COE Room 201", "COE Room 202", "CANS Lecture Hall", "Dormitory 2nd Floor"].sort();
 
         let sharedSchedules = [
             { id: 1, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE III - 1", subjectTitle: "CpE 311 (Logic Circuits and Design)", unifiedUnits: 4, instructorName: "Araneta, Arvin Anthony S.", dayAssignment: "Monday and Wednesday", startTime: "13:00", endTime: "16:00", roomNumber: "COE Lab 1" },
             { id: 2, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE I", subjectTitle: "CpE 111 (Computer Engineering as a Discipline)", unifiedUnits: 1, instructorName: "Lagramada, Alyssa Faye Y.", dayAssignment: "Tuesday and Thursday", startTime: "08:00", endTime: "09:00", roomNumber: "COE Room 201" },
-            { id: 3, college: "CCS", program: "Bachelor of Science in Information Technology", classSection: "BSIT II - A", subjectTitle: "IT 214 (Data Structures and Algorithms)", unifiedUnits: 3, instructorName: "Dialogo, Gil G.", dayAssignment: "Tuesday and Thursday", startTime: "13:00", endTime: "16:00", roomNumber: "CCS IT-Lab" }
+            { id: 3, college: "CCS", program: "Bachelor of Science in Information Technology", classSection: "BSIT II - A", subjectTitle: "IT 214 (Data Structures and Algorithms)", unifiedUnits: 3, instructorName: "Dialogo, Gil G.", dayAssignment: "Tuesday and Thursday", startTime: "13:00", endTime: "16:00", roomNumber: "CCS IT-Lab" },
+            { id: 4, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE II", subjectTitle: "CpE 213 (Data Structures)", unifiedUnits: 3, instructorName: "TBA", dayAssignment: "Friday", startTime: "08:00", endTime: "11:00", roomNumber: "COE Room 202" },
+            { id: 5, college: "CCS", program: "Bachelor of Science in Computer Science", classSection: "BSCS I - B", subjectTitle: "NSTP 1 (National Service Training Program)", unifiedUnits: 3, instructorName: "Abad, Loren Rose A.", dayAssignment: "Saturday", startTime: "08:00", endTime: "11:00", roomNumber: "CANS Lecture Hall" }
         ];
 
         let currentSummarySortMetric = 'units';
         let currentSummaryGroupingMode = 'none';
+
+        // Core Data Filtering (Excludes NSTP)
+        function getFilteredSchedules() {
+            return sharedSchedules.filter(s => !s.subjectTitle.toUpperCase().includes("NSTP"));
+        }
 
         // Tab Switches
         function switchTab(tabId) {
@@ -436,7 +441,6 @@ BSCpE III - 1
                 secSelect.appendChild(opt);
             });
 
-            // Sync Room Assignment Dropdown Options inside Manual Form
             const rSelect = document.getElementById("roomSelect");
             rSelect.innerHTML = '<option value="">Select Room Layout...</option>';
             registeredRooms.forEach(rm => {
@@ -498,7 +502,6 @@ BSCpE III - 1
                     return;
                 }
 
-                // Parser Day Ingestion Logic Sync Checks
                 const upper = cleanLine.toUpperCase();
                 if (upper.includes("MONDAY") || upper.includes("TUESDAY") || upper.includes("WEDNESDAY") || upper.includes("THURSDAY") || upper.includes("FRIDAY") || upper.includes("SATURDAY")) {
                     if (upper.includes("MONDAY") && upper.includes("WEDNESDAY")) currentDayAssignment = "Monday and Wednesday";
@@ -536,7 +539,7 @@ BSCpE III - 1
                         }
 
                         let matchFaculty = registeredFaculty.find(f => 
-                            f.toLowerCase().includes(instructorBlock.toLowerCase()) || 
+                            f.toLowerCase() === instructorBlock.toLowerCase() || 
                             instructorBlock.toLowerCase().includes(f.split(',')[0].toLowerCase())
                         ) || instructorBlock;
 
@@ -545,7 +548,6 @@ BSCpE III - 1
                             registeredFaculty.sort();
                         }
 
-                        // Auto Ingest rooms into physical registry if unrecognized
                         if (!registeredRooms.includes(roomBlock) && roomBlock.trim() !== "") {
                             registeredRooms.push(roomBlock);
                             registeredRooms.sort();
@@ -571,7 +573,7 @@ BSCpE III - 1
 
             executeRegistryDataSynchronization();
             clearIngestionConsole();
-            alert(`✅ Document Parsing Ingest Terminated!\nLoaded ${parsedCount} records into main dashboards.`);
+            alert(`✅ Document Parsing Terminated! Loaded ${parsedCount} records into main dashboards.`);
             switchTab('schedule-view');
         }
 
@@ -592,28 +594,34 @@ BSCpE III - 1
             const container = document.getElementById("masterScheduleContainer");
             container.innerHTML = "";
 
-            if (sharedSchedules.length === 0) {
-                container.innerHTML = `<div class="p-12 border border-dashed rounded-xl text-center text-gray-400 font-medium bg-white">No schedules uploaded or encoded yet. Open the Ingestion Engine to begin.</div>`;
+            const workingSchedules = getFilteredSchedules();
+
+            if (workingSchedules.length === 0) {
+                container.innerHTML = `<div class="p-12 border border-dashed rounded-xl text-center text-gray-400 font-medium bg-white">No schedules uploaded or encoded yet.</div>`;
                 return;
             }
 
             Object.keys(registeredPrograms).forEach(college => {
-                const collegeRecords = sharedSchedules.filter(s => s.college === college);
+                const collegeRecords = workingSchedules.filter(s => s.college === college);
                 if (collegeRecords.length === 0) return;
 
                 const div = document.createElement("div");
                 div.className = "print-page border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white";
                 
-                let tableRows = collegeRecords.map(rec => `
+                let tableRows = collegeRecords.map(rec => {
+                    const isTba = rec.instructorName.trim().toUpperCase() === "TBA";
+                    return `
                     <tr class="hover:bg-gray-50 border-b border-gray-100 text-sm">
                         <td class="p-3 font-semibold text-blue-900">${rec.classSection}</td>
                         <td class="p-3 text-xs">${rec.dayAssignment}<br><span class="font-mono font-bold text-gray-500">${rec.startTime} - ${rec.endTime}</span></td>
                         <td class="p-3 font-medium">${rec.subjectTitle}</td>
                         <td class="p-3 text-center font-bold text-blue-950 bg-blue-50/20">${rec.unifiedUnits}</td>
-                        <td class="p-3 font-medium">${rec.instructorName}</td>
+                        <td class="p-3 font-medium ${isTba ? 'text-red-500 italic font-semibold' : ''}">
+                            ${isTba ? 'No instructor handling the subjects' : rec.instructorName}
+                        </td>
                         <td class="p-3 font-mono text-gray-600 text-xs text-center">${rec.roomNumber}</td>
                     </tr>
-                `).join('');
+                `}).join('');
 
                 div.innerHTML = `
                     <div class="bg-blue-950 text-white p-4 font-bold flex justify-between items-center">
@@ -647,8 +655,9 @@ BSCpE III - 1
         }
 
         function getAggregatedFacultyMetricsList() {
+            const workingSchedules = getFilteredSchedules();
             return registeredFaculty.map(prof => {
-                const classes = sharedSchedules.filter(s => s.instructorName === prof);
+                const classes = workingSchedules.filter(s => s.instructorName === prof);
                 let totalUnits = 0, totalHours = 0;
                 let prepsSet = new Set();
                 let linkedColleges = new Set();
@@ -668,6 +677,8 @@ BSCpE III - 1
             const container = document.getElementById("summaryDashboardDynamicContent");
             container.innerHTML = "";
             let dataset = getAggregatedFacultyMetricsList();
+            const workingSchedules = getFilteredSchedules();
+
             if (dataset.length === 0) { container.innerHTML = `<div class="p-12 border border-dashed rounded-xl text-center text-gray-400 font-medium bg-white">No active class block schedules found.</div>`; return; }
 
             if (currentSummaryGroupingMode === 'none') {
@@ -678,18 +689,35 @@ BSCpE III - 1
                     <table class="w-full text-left border-collapse border border-gray-200 bg-white shadow-sm rounded-lg overflow-hidden">
                         <thead>
                             <tr class="bg-gray-100 border-b border-gray-300 text-xs font-bold uppercase text-gray-600">
-                                <th class="p-3">Faculty Member</th><th class="p-3 text-center">Total Assigned Units</th><th class="p-3 text-center">Total Hours / Week</th><th class="p-3 text-center">Preparations Index</th>
+                                <th class="p-3">Faculty Member / Status</th>
+                                <th class="p-3 text-center">Total Assigned Units</th>
+                                <th class="p-3 text-center">Total Hours / Week</th>
+                                <th class="p-3 text-center">Preparations Index</th>
+                                <th class="p-3">Subject Breakdown List</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-sm">
-                            ${dataset.map(row => `
-                                <tr>
-                                    <td class="p-3 font-semibold text-gray-900">${row.name}</td>
-                                    <td class="p-3 text-center text-blue-950 font-bold bg-blue-50/40">${row.units} Unit(s)</td>
-                                    <td class="p-3 text-center text-emerald-950 font-mono font-bold bg-emerald-50/30">${row.hours.toFixed(1)} Hrs/Wk</td>
+                            ${dataset.map(row => {
+                                const isTba = row.name.trim().toUpperCase() === "TBA";
+                                // Pull distinct subject list for subjects assigned to TBA
+                                const assignedSubjects = workingSchedules
+                                    .filter(s => s.instructorName === row.name)
+                                    .map(s => s.subjectTitle);
+                                const distinctSubjects = Array.from(new Set(assignedSubjects)).join(', ');
+
+                                return `
+                                <tr class="${isTba ? 'bg-red-50/40' : ''}">
+                                    <td class="p-3 font-semibold ${isTba ? 'text-red-600 italic' : 'text-gray-900'}">
+                                        ${isTba ? 'No instructor handling the subjects' : row.name}
+                                    </td>
+                                    <td class="p-3 text-center text-blue-950 font-bold bg-blue-50/20">${row.units} Unit(s)</td>
+                                    <td class="p-3 text-center text-emerald-950 font-mono font-bold bg-emerald-50/10">${row.hours.toFixed(1)} Hrs/Wk</td>
                                     <td class="p-3 text-center text-gray-600 font-medium">${row.prepsCount} Prep(s)</td>
+                                    <td class="p-3 text-xs text-gray-600 font-medium max-w-sm truncate" title="${distinctSubjects}">
+                                        ${distinctSubjects || '—'}
+                                    </td>
                                 </tr>
-                            `).join('')}
+                            `}).join('')}
                         </tbody>
                     </table>`;
             } 
@@ -702,9 +730,19 @@ BSCpE III - 1
                         <div class="mb-8 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
                             <div class="bg-slate-900 text-white p-3 font-bold text-sm tracking-wide flex justify-between"><span>${college} Division Workloads</span></div>
                             <table class="w-full text-left border-collapse">
-                                <thead><tr class="bg-slate-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500"><th class="p-3 pl-4">Instructor Name</th><th class="p-3 text-center">Units</th><th class="p-3 text-center">Clock Hours</th><th class="p-3 text-center">Preps</th></tr></thead>
+                                <thead><tr class="bg-slate-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500"><th class="p-3 pl-4">Instructor Name</th><th class="p-3 text-center">Units</th><th class="p-3 text-center">Clock Hours</th><th class="p-3 text-center">Preps</th><th class="p-3">Handled Subjects</th></tr></thead>
                                 <tbody class="divide-y divide-gray-100 text-sm">
-                                    ${rows.map(row => `<tr><td class="p-3 pl-4 font-semibold text-gray-800">${row.name}</td><td class="p-3 text-center text-blue-900 font-bold">${row.units}</td><td class="p-3 text-center font-mono">${row.hours.toFixed(1)}</td><td class="p-3 text-center text-xs text-gray-500">${row.prepsCount}</td></tr>`).join('')}
+                                    ${rows.map(row => {
+                                        const isTba = row.name.trim().toUpperCase() === "TBA";
+                                        const subjectList = Array.from(new Set(workingSchedules.filter(s => s.instructorName === row.name).map(s => s.subjectTitle))).join(', ');
+                                        return `<tr>
+                                            <td class="p-3 pl-4 font-semibold ${isTba ? 'text-red-600 italic' : 'text-gray-800'}">${isTba ? 'No instructor handling the subjects' : row.name}</td>
+                                            <td class="p-3 text-center text-blue-900 font-bold">${row.units}</td>
+                                            <td class="p-3 text-center font-mono">${row.hours.toFixed(1)}</td>
+                                            <td class="p-3 text-center text-xs text-gray-500">${row.prepsCount}</td>
+                                            <td class="p-3 text-xs text-gray-600 max-w-xs truncate" title="${subjectList}">${subjectList}</td>
+                                        </tr>`
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>`;
@@ -721,9 +759,19 @@ BSCpE III - 1
                             <div class="mb-8 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
                                 <div class="bg-cyan-950 text-white p-3 font-bold text-sm flex justify-between"><span>🎓 Course: ${program}</span></div>
                                 <table class="w-full text-left border-collapse">
-                                    <thead><tr class="bg-slate-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500"><th class="p-3 pl-4">Instructor Name</th><th class="p-3 text-center">Units</th><th class="p-3 text-center">Hours</th><th class="p-3 text-center">Preps</th></tr></thead>
+                                    <thead><tr class="bg-slate-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500"><th class="p-3 pl-4">Instructor Name</th><th class="p-3 text-center">Units</th><th class="p-3 text-center">Hours</th><th class="p-3 text-center">Preps</th><th class="p-3">Handled Subjects</th></tr></thead>
                                     <tbody class="divide-y divide-gray-100 text-sm">
-                                        ${rows.map(row => `<tr><td class="p-3 pl-4 font-semibold text-gray-800">${row.name}</td><td class="p-3 text-center font-bold">${row.units}</td><td class="p-3 text-center font-mono">${row.hours.toFixed(1)}</td><td class="p-3 text-center text-xs">${row.prepsCount}</td></tr>`).join('')}
+                                        ${rows.map(row => {
+                                            const isTba = row.name.trim().toUpperCase() === "TBA";
+                                            const subjectList = Array.from(new Set(workingSchedules.filter(s => s.instructorName === row.name && s.program === program).map(s => s.subjectTitle))).join(', ');
+                                            return `<tr>
+                                                <td class="p-3 pl-4 font-semibold ${isTba ? 'text-red-600 italic' : 'text-gray-800'}">${isTba ? 'No instructor handling the subjects' : row.name}</td>
+                                                <td class="p-3 text-center font-bold">${row.units}</td>
+                                                <td class="p-3 text-center font-mono">${row.hours.toFixed(1)}</td>
+                                                <td class="p-3 text-center text-xs">${row.prepsCount}</td>
+                                                <td class="p-3 text-xs text-gray-600 max-w-xs truncate" title="${subjectList}">${subjectList}</td>
+                                            </tr>`
+                                        }).join('')}
                                     </tbody>
                                 </table>
                             </div>`;
@@ -735,10 +783,14 @@ BSCpE III - 1
 
         function updateFacultySelector() {
             const selector = document.getElementById("facultySelector");
-            const activeProfiles = [...new Set(sharedSchedules.map(s => s.instructorName))].sort();
+            const workingSchedules = getFilteredSchedules();
+            const activeProfiles = [...new Set(workingSchedules.map(s => s.instructorName))].sort();
             selector.innerHTML = '<option value="ALL">Show All Faculty Sheets</option>';
             activeProfiles.forEach(prof => {
-                let opt = document.createElement("option"); opt.value = prof; opt.textContent = prof; selector.appendChild(opt);
+                let opt = document.createElement("option"); 
+                opt.value = prof; 
+                opt.textContent = prof.toUpperCase() === "TBA" ? "No Instructor Assigned (TBA)" : prof; 
+                selector.appendChild(opt);
             });
         }
 
@@ -746,12 +798,16 @@ BSCpE III - 1
             const container = document.getElementById("workloadSheetsContainer");
             const filterValue = document.getElementById("facultySelector").value;
             container.innerHTML = "";
-            let activeProfiles = [...new Set(sharedSchedules.map(s => s.instructorName))].sort();
+            
+            const workingSchedules = getFilteredSchedules();
+            let activeProfiles = [...new Set(workingSchedules.map(s => s.instructorName))].sort();
             if (filterValue !== "ALL") activeProfiles = [filterValue];
 
             activeProfiles.forEach(prof => {
-                const classes = sharedSchedules.filter(s => s.instructorName === prof); if (classes.length === 0) return;
+                const classes = workingSchedules.filter(s => s.instructorName === prof); if (classes.length === 0) return;
+                const isTba = prof.trim().toUpperCase() === "TBA";
                 let subUnits = 0, subHrs = 0; let preps = new Set();
+                
                 let rowsHtml = classes.map(c => {
                     subUnits += c.unifiedUnits; preps.add(c.subjectTitle);
                     let absHrs = calculateWeeklyHours(c.dayAssignment, c.startTime, c.endTime); subHrs += absHrs;
@@ -774,7 +830,9 @@ BSCpE III - 1
                         <p class="text-xs font-semibold text-gray-600">First Semester, Academic Year 2026 - 2027</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-4 bg-gray-50 p-3 rounded border border-gray-200">
-                        <div><span class="font-bold text-gray-600 uppercase text-[10px] block">Faculty Member:</span> <span class="font-bold text-blue-950">${prof}</span></div>
+                        <div><span class="font-bold text-gray-600 uppercase text-[10px] block">Faculty Member / Assignment Status:</span> 
+                             <span class="font-bold ${isTba ? 'text-red-600 italic' : 'text-blue-950'}">${isTba ? 'No instructor handling the subjects' : prof}</span>
+                        </div>
                         <div class="text-left md:text-right"><span class="font-bold text-gray-600 uppercase text-[10px] block">Preparations Index:</span> <span class="font-mono font-bold">${preps.size} Distinct Prep(s)</span></div>
                     </div>
                     <table class="w-full text-xs border-collapse border border-gray-400">
@@ -797,17 +855,22 @@ BSCpE III - 1
             });
         }
 
-        // ==========================================
-        // AUTOMATED DYNAMIC PDF REPORT EXPORT ENGINES
-        // ==========================================
+        // PDF Generation Engines
         function exportMasterProgramPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); let firstSection = true;
+            const workingSchedules = getFilteredSchedules();
+
             Object.keys(registeredPrograms).forEach(college => {
-                const records = sharedSchedules.filter(s => s.college === college); if (records.length === 0) return;
+                const records = workingSchedules.filter(s => s.college === college); if (records.length === 0) return;
                 if (!firstSection) doc.addPage(); firstSection = false;
                 doc.setFont("Helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(20, 30, 70);
                 doc.text(`${college} - UNIVERSITY MASTER CLASS MATRIX`, 14, 18);
-                const tableBody = records.map(r => [r.classSection, `${r.dayAssignment}\n(${r.startTime} - ${r.endTime})`, r.subjectTitle, r.unifiedUnits, r.instructorName, r.roomNumber]);
+                
+                const tableBody = records.map(r => {
+                    const profLabel = r.instructorName.trim().toUpperCase() === "TBA" ? "No instructor handling the subjects" : r.instructorName;
+                    return [r.classSection, `${r.dayAssignment}\n(${r.startTime} - ${r.endTime})`, r.subjectTitle, r.unifiedUnits, profLabel, r.roomNumber];
+                });
+
                 doc.autoTable({
                     startY: 27,
                     head: [['Class & Section', 'Day & Time', 'Subject Descriptive Title', 'Units', 'Instructor Name', 'Room']],
@@ -824,27 +887,23 @@ BSCpE III - 1
 
             if (currentSummaryGroupingMode === 'none') {
                 if (currentSummarySortMetric === 'units') dataset.sort((a, b) => b.units - a.units); else dataset.sort((a, b) => b.hours - a.hours);
-                let rows = dataset.map(f => [f.name, `${f.units} Units`, `${f.hours.toFixed(1)} Hrs`, `${f.prepsCount} Preps`]);
+                let rows = dataset.map(f => {
+                    const profLabel = f.name.trim().toUpperCase() === "TBA" ? "No instructor handling subjects" : f.name;
+                    return [profLabel, `${f.units} Units`, `${f.hours.toFixed(1)} Hrs`, `${f.prepsCount} Preps`];
+                });
                 doc.autoTable({ startY: 28, head: [['Faculty Member Name', 'Workload Units', 'Weekly Hours', 'Course Preps']], body: rows, theme: 'grid', headStyles: { fillColor: [15, 23, 42] } });
-            } else if (currentSummaryGroupingMode === 'college') {
+            } else {
                 let y = 28;
                 Object.keys(registeredPrograms).forEach(college => {
                     let rows = dataset.filter(f => f.colleges.includes(college)); if (rows.length === 0) return;
+                    doc.setFontSize(11);
                     doc.text(`• Division: ${college}`, 14, y + 5);
-                    let body = rows.map(f => [f.name, `${f.units} U`, `${f.hours.toFixed(1)} H`, `${f.prepsCount} P`]);
-                    doc.autoTable({ startY: y + 8, head: [['Faculty Member', 'Units', 'Hours', 'Preps']], body: body, theme: 'striped', headStyles: { fillColor: [51, 65, 85] } });
-                    y = doc.autoTable.previous.startY + (body.length * 10) + 15;
-                });
-            } else if (currentSummaryGroupingMode === 'program') {
-                let y = 28;
-                Object.keys(registeredPrograms).forEach(college => {
-                    registeredPrograms[college].forEach(program => {
-                        let rows = dataset.filter(f => f.programs.includes(program)); if (rows.length === 0) return;
-                        doc.text(`🎓 Course: ${program}`, 14, y + 4);
-                        let body = rows.map(f => [f.name, `${f.units} U`, `${f.hours.toFixed(1)} H`, `${f.prepsCount} P`]);
-                        doc.autoTable({ startY: y + 7, head: [['Faculty Member', 'Units', 'Hours', 'Preps']], body: body, theme: 'grid', headStyles: { fillColor: [21, 94, 117] } });
-                        y = doc.autoTable.previous.startY + (body.length * 10) + 15;
+                    let body = rows.map(f => {
+                        const label = f.name.trim().toUpperCase() === "TBA" ? "No instructor handling subjects" : f.name;
+                        return [label, `${f.units} U`, `${f.hours.toFixed(1)} H`, `${f.prepsCount} P`];
                     });
+                    doc.autoTable({ startY: y + 8, head: [['Faculty Member', 'Units', 'Hours', 'Preps']], body: body, theme: 'striped', headStyles: { fillColor: [51, 65, 85] } });
+                    y = doc.autoTable.previous.finalY + 10;
                 });
             }
             doc.save('Faculty_Load_Summary_Report.pdf');
@@ -853,17 +912,20 @@ BSCpE III - 1
         function exportIndividualWorkloadsPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
             const filterValue = document.getElementById("facultySelector").value;
-            let profiles = [...new Set(sharedSchedules.map(s => s.instructorName))].sort();
+            const workingSchedules = getFilteredSchedules();
+            let profiles = [...new Set(workingSchedules.map(s => s.instructorName))].sort();
             if (filterValue !== "ALL") profiles = [filterValue];
 
             let firstPage = true;
             profiles.forEach(prof => {
-                const classes = sharedSchedules.filter(s => s.instructorName === prof); if (classes.length === 0) return;
+                const classes = workingSchedules.filter(s => s.instructorName === prof); if (classes.length === 0) return;
                 if (!firstPage) doc.addPage(); firstPage = false;
 
+                const isTba = prof.trim().toUpperCase() === "TBA";
+
                 doc.rect(10, 10, 190, 277);
-                doc.setFont("Helvetica", "bold"); doc.setFontSize(14); doc.text("INDIVIDUAL FACULTY WORKLOAD SHEET", 105, 22, { align: 'center' });
-                doc.setFontSize(9); doc.text(`Faculty Name Member: ${prof}`, 14, 38);
+                doc.setFont("Helvetica", "bold"); doc.setFontSize(12); doc.text("INDIVIDUAL FACULTY WORKLOAD SHEET", 105, 22, { align: 'center' });
+                doc.setFontSize(9); doc.text(`Faculty Name/Status: ${isTba ? 'No instructor handling the subjects' : prof}`, 14, 38);
                 
                 let subUnits = 0, subHrs = 0;
                 let body = classes.map(c => {
@@ -883,84 +945,37 @@ BSCpE III - 1
             doc.save(`Faculty_Workload_Sheets.pdf`);
         }
 
-        // Registries UI Display Handlers
+        // Registries Management Functions
         function renderRegistryManagement() {
             const progBody = document.getElementById("regProgramsTableBody"); progBody.innerHTML = "";
             Object.keys(registeredPrograms).forEach(college => {
                 registeredPrograms[college].forEach((prog, index) => {
                     let tr = document.createElement("tr"); tr.className = "hover:bg-gray-50 border-b border-gray-100 text-xs";
-                    tr.innerHTML = `<td class="p-2 font-bold text-gray-600">${college}</td><td>${prog}</td><td class="p-2 text-right"><button onclick="editProgram('${college}', ${index})" class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded cursor-pointer">Edit</button> <button onclick="deleteProgram('${college}', ${index})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td>`;
+                    tr.innerHTML = `<td class="p-2 font-bold text-gray-600">${college}</td><td>${prog}</td><td class="p-2 text-right"><button onclick="deleteProgram('${college}', ${index})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td>`;
                     progBody.appendChild(tr);
                 });
             });
 
             const secBody = document.getElementById("regSectionsTableBody");
-            secBody.innerHTML = registeredSections.map((sec, idx) => `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="p-2 font-semibold">${sec}</td><td class="p-2 text-right"><button onclick="editSection(${idx})" class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded cursor-pointer">Edit</button> <button onclick="deleteSection(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td></tr>`).join('');
+            secBody.innerHTML = registeredSections.map((sec, idx) => `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="p-2 font-semibold">${sec}</td><td class="p-2 text-right"><button onclick="deleteSection(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td></tr>`).join('');
 
             const facBody = document.getElementById("regFacultyTableBody");
-            facBody.innerHTML = registeredFaculty.map((fac, idx) => `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="p-2 font-semibold">${fac}</td><td class="p-2 text-right"><button onclick="editFaculty(${idx})" class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded cursor-pointer">Edit</button> <button onclick="deleteFaculty(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td></tr>`).join('');
+            facBody.innerHTML = registeredFaculty.map((fac, idx) => `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="p-2 font-semibold">${fac === "TBA" ? "TBA (Unassigned Placeholder)" : fac}</td><td class="p-2 text-right"><button onclick="deleteFaculty(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td></tr>`).join('');
 
-            // Populate Room Management Registry UI Table Rows
             const rmBody = document.getElementById("regRoomsTableBody");
-            rmBody.innerHTML = registeredRooms.map((rm, idx) => `
-                <tr class="hover:bg-gray-50 border-b border-gray-100 text-xs">
-                    <td class="p-2 font-semibold text-gray-800">${rm}</td>
-                    <td class="p-2 text-right">
-                        <button onclick="editRoom(${idx})" class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded cursor-pointer">Edit</button>
-                        <button onclick="deleteRoom(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button>
-                    </td>
-                </tr>`).join('');
+            rmBody.innerHTML = registeredRooms.map((rm, idx) => `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="p-2 font-semibold text-gray-800">${rm}</td><td class="p-2 text-right"><button onclick="deleteRoom(${idx})" class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded cursor-pointer">Delete</button></td></tr>`).join('');
         }
 
-        // --- CRUD ACTIONS ASSIGNMENT MANAGEMENT FOR ROOMS ---
-        document.getElementById("addRoomForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            let val = document.getElementById("regRoomName").value.trim();
-            if (val && !registeredRooms.includes(val)) {
-                registeredRooms.push(val); registeredRooms.sort();
-                document.getElementById("regRoomName").value = "";
-                executeRegistryDataSynchronization();
-            }
-        });
-
-        function editRoom(idx) {
-            let oldVal = registeredRooms[idx];
-            let newVal = prompt("Modify University Room/Facility Title Descriptor:", oldVal);
-            if (newVal && newVal.trim() !== "") {
-                newVal = newVal.trim(); registeredRooms[idx] = newVal; registeredRooms.sort();
-                sharedSchedules.forEach(s => { if(s.roomNumber === oldVal) s.roomNumber = newVal; });
-                executeRegistryDataSynchronization();
-            }
-        }
-
-        function deleteRoom(idx) {
-            if (confirm("Delete this room allocation completely from the registry options index?")) {
-                registeredRooms.splice(idx, 1); executeRegistryDataSynchronization();
-            }
-        }
-
-        // --- CORE REGISTRY CRUD HANDLERS ---
-        function editProgram(college, idx) {
-            let oldVal = registeredPrograms[college][idx]; let newVal = prompt("Modify Program Title Description:", oldVal);
-            if(newVal && newVal.trim() !== "") { newVal = newVal.trim(); registeredPrograms[college][idx] = newVal; sharedSchedules.forEach(s => { if(s.college === college && s.program === oldVal) s.program = newVal; }); executeRegistryDataSynchronization(); }
-        }
-        function deleteProgram(college, idx) { if(confirm("Confirm program deletion?")) { registeredPrograms[college].splice(idx, 1); executeRegistryDataSynchronization(); } }
-        function editSection(idx) {
-            let oldVal = registeredSections[idx]; let newVal = prompt("Modify Section String:", oldVal);
-            if(newVal && newVal.trim() !== "") { newVal = newVal.trim(); registeredSections[idx] = newVal; registeredSections.sort(); sharedSchedules.forEach(s => { if(s.classSection === oldVal) s.classSection = newVal; }); executeRegistryDataSynchronization(); }
-        }
-        function deleteSection(idx) { if(confirm("Confirm removal?")) { registeredSections.splice(idx, 1); executeRegistryDataSynchronization(); } }
-        function editFaculty(idx) {
-            let oldVal = registeredFaculty[idx]; let newVal = prompt("Modify Instructor String Parameters:", oldVal);
-            if(newVal && newVal.trim() !== "") { newVal = newVal.trim(); registeredFaculty[idx] = newVal; registeredFaculty.sort(); sharedSchedules.forEach(s => { if(s.instructorName === oldVal) s.instructorName = newVal; }); executeRegistryDataSynchronization(); }
-        }
-        function deleteFaculty(idx) { if(confirm("Confirm removal from indices?")) { registeredFaculty.splice(idx, 1); executeRegistryDataSynchronization(); } }
+        function deleteProgram(college, idx) { registeredPrograms[college].splice(idx, 1); executeRegistryDataSynchronization(); }
+        function deleteSection(idx) { registeredSections.splice(idx, 1); executeRegistryDataSynchronization(); }
+        function deleteFaculty(idx) { registeredFaculty.splice(idx, 1); executeRegistryDataSynchronization(); }
+        function deleteRoom(idx) { registeredRooms.splice(idx, 1); executeRegistryDataSynchronization(); }
 
         function executeRegistryDataSynchronization() {
             refreshFormSelectors(); renderRegistryManagement(); renderMasterSchedule(); renderSummaryDashboard(); updateFacultySelector(); renderWorkloads();
         }
 
-        // Manual Entry Actions Form Submission Handler
+        // Manual Submission Entry Actions
         document.getElementById("scheduleForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const record = {
@@ -976,21 +991,6 @@ BSCpE III - 1
                 endTime: document.getElementById("endTime").value,
                 roomNumber: document.getElementById("roomSelect").value
             };
-
-            const conflict = sharedSchedules.find(exist => {
-                if (exist.dayAssignment === record.dayAssignment) {
-                    const matchRoom = exist.roomNumber.toLowerCase() === record.roomNumber.toLowerCase();
-                    const matchProf = exist.instructorName === record.instructorName;
-                    if ((matchRoom || matchProf) && exist.instructorName !== "Instructor Unassigned") {
-                        const sNew = toMins(record.startTime), eNew = toMins(record.endTime);
-                        const sExist = toMins(exist.startTime), eExist = toMins(exist.endTime);
-                        return (sNew < eExist && eNew > sExist);
-                    }
-                }
-                return false;
-            });
-
-            if (conflict) { alert(`⚠️ Schedule Collision!\nConflicts with row slot entry: ${conflict.subjectTitle}`); return; }
 
             sharedSchedules.push(record); this.reset(); executeRegistryDataSynchronization();
             alert("✅ Manual class block recorded successfully!"); switchTab('schedule-view');
