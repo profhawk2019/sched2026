@@ -235,6 +235,33 @@ BSCpE III - 1
                     </button>
                 </div>
             </div>
+            
+            <!-- TBA SUBJECT MONITORING CONSOLE PANEL -->
+            <div id="tbaAlertConsole" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-bold text-red-900 uppercase tracking-wide flex items-center gap-1.5">
+                        ⚠️ Unassigned Curricular Subjects Console (TBA Status)
+                    </h3>
+                    <span id="tbaCounterLabel" class="bg-red-200 text-red-800 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">0 Subjects</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-red-200 text-red-700 font-bold uppercase bg-red-100/50">
+                                <th class="p-2">Subject Descriptor Title</th>
+                                <th class="p-2">Course Track</th>
+                                <th class="p-2">Section Block</th>
+                                <th class="p-2">Day/Time Allotment</th>
+                                <th class="p-2 text-center">Units</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbaSubjectsTableBody" class="divide-y divide-red-100 font-medium text-red-900">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div id="summaryDashboardDynamicContent" class="overflow-x-auto"></div>
         </section>
 
@@ -363,8 +390,9 @@ BSCpE III - 1
             { id: 1, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE III - 1", subjectTitle: "CpE 311 (Logic Circuits and Design)", unifiedUnits: 4, instructorName: "Araneta, Arvin Anthony S.", dayAssignment: "Monday and Wednesday", startTime: "13:00", endTime: "16:00", roomNumber: "COE Lab 1" },
             { id: 2, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE I", subjectTitle: "CpE 111 (Computer Engineering as a Discipline)", unifiedUnits: 1, instructorName: "Lagramada, Alyssa Faye Y.", dayAssignment: "Tuesday and Thursday", startTime: "08:00", endTime: "09:00", roomNumber: "COE Room 201" },
             { id: 3, college: "CCS", program: "Bachelor of Science in Information Technology", classSection: "BSIT II - A", subjectTitle: "IT 214 (Data Structures and Algorithms)", unifiedUnits: 3, instructorName: "Dialogo, Gil G.", dayAssignment: "Tuesday and Thursday", startTime: "13:00", endTime: "16:00", roomNumber: "CCS IT-Lab" },
-            { id: 4, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE II", subjectTitle: "CpE 213 (Data Structures)", unifiedUnits: 3, instructorName: "TBA", dayAssignment: "Friday", startTime: "08:00", endTime: "11:00", roomNumber: "COE Room 202" },
-            { id: 5, college: "CCS", program: "Bachelor of Science in Computer Science", classSection: "BSCS I - B", subjectTitle: "NSTP 1 (National Service Training Program)", unifiedUnits: 3, instructorName: "Abad, Loren Rose A.", dayAssignment: "Saturday", startTime: "08:00", endTime: "11:00", roomNumber: "CANS Lecture Hall" }
+            { id: 4, college: "COE", program: "Bachelor of Science in Computer Engineering", classSection: "BSCpE II", subjectTitle: "CpE 213 (Discrete Mathematics)", unifiedUnits: 3, instructorName: "TBA", dayAssignment: "Friday", startTime: "08:00", endTime: "11:00", roomNumber: "COE Room 202" },
+            { id: 5, college: "CCS", program: "Bachelor of Science in Computer Science", classSection: "BSCS I - B", subjectTitle: "NSTP 1 (National Service Training Program)", unifiedUnits: 3, instructorName: "Abad, Loren Rose A.", dayAssignment: "Saturday", startTime: "08:00", endTime: "11:00", roomNumber: "CANS Lecture Hall" },
+            { id: 6, college: "CCS", program: "Bachelor of Science in Computer Science", classSection: "BSCS II - A", subjectTitle: "CS 221 (Advanced Object-Oriented Programming)", unifiedUnits: 3, instructorName: "TBA", dayAssignment: "Monday", startTime: "09:00", endTime: "12:00", roomNumber: "CCS IT-Lab" }
         ];
 
         let currentSummarySortMetric = 'units';
@@ -573,7 +601,7 @@ BSCpE III - 1
 
             executeRegistryDataSynchronization();
             clearIngestionConsole();
-            alert(`✅ Document Parsing Terminated! Loaded ${parsedCount} records into main dashboards.`);
+            alert(`✅ Document Parsing Terminated! Loaded ${parsedCount} records.`);
             switchTab('schedule-view');
         }
 
@@ -673,14 +701,42 @@ BSCpE III - 1
             }).filter(item => item.units > 0);
         }
 
+        // Renders the summary tables AND details the separate TBA tracking list
         function renderSummaryDashboard() {
             const container = document.getElementById("summaryDashboardDynamicContent");
+            const tbaTableBody = document.getElementById("tbaSubjectsTableBody");
+            const tbaCounterLabel = document.getElementById("tbaCounterLabel");
+            
             container.innerHTML = "";
-            let dataset = getAggregatedFacultyMetricsList();
+            tbaTableBody.innerHTML = "";
+            
             const workingSchedules = getFilteredSchedules();
+            let dataset = getAggregatedFacultyMetricsList();
 
-            if (dataset.length === 0) { container.innerHTML = `<div class="p-12 border border-dashed rounded-xl text-center text-gray-400 font-medium bg-white">No active class block schedules found.</div>`; return; }
+            // 1. POPULATE TBA LIVE STATUS CONSOLE LIST
+            const tbaSchedules = workingSchedules.filter(s => s.instructorName.trim().toUpperCase() === "TBA");
+            tbaCounterLabel.textContent = `${tbaSchedules.length} Class Row(s)`;
+            
+            if (tbaSchedules.length === 0) {
+                tbaTableBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-400 italic">No unassigned TBA subject blocks in system storage.</td></tr>`;
+            } else {
+                tbaTableBody.innerHTML = tbaSchedules.map(s => `
+                    <tr class="hover:bg-red-100/40 border-b border-red-100">
+                        <td class="p-2 font-bold">${s.subjectTitle}</td>
+                        <td class="p-2 font-normal">${s.program}</td>
+                        <td class="p-2 font-mono">${s.classSection}</td>
+                        <td class="p-2">${s.dayAssignment} (${s.startTime}-${s.endTime})</td>
+                        <td class="p-2 text-center font-bold">${s.unifiedUnits}</td>
+                    </tr>
+                `).join('');
+            }
 
+            if (dataset.length === 0) { 
+                container.innerHTML = `<div class="p-12 border border-dashed rounded-xl text-center text-gray-400 font-medium bg-white">No active class block schedules found.</div>`; 
+                return; 
+            }
+
+            // 2. RENDER OVERALL SUMMARY DASHBOARD TABLES
             if (currentSummaryGroupingMode === 'none') {
                 if (currentSummarySortMetric === 'units') dataset.sort((a, b) => b.units - a.units || b.hours - a.hours);
                 else dataset.sort((a, b) => b.hours - a.hours || b.units - a.units);
@@ -699,7 +755,6 @@ BSCpE III - 1
                         <tbody class="divide-y divide-gray-200 text-sm">
                             ${dataset.map(row => {
                                 const isTba = row.name.trim().toUpperCase() === "TBA";
-                                // Pull distinct subject list for subjects assigned to TBA
                                 const assignedSubjects = workingSchedules
                                     .filter(s => s.instructorName === row.name)
                                     .map(s => s.subjectTitle);
