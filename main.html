@@ -16,13 +16,11 @@
             .print-page { page-break-after: always; padding: 0 !important; margin: 0 !important; border: none !important; }
             body { background: white !important; color: black !important; }
             
-            /* Specialized Print Override Controls */
             body > *:not(.print-matrix-view) { display: none !important; }
             .print-matrix-view { display: block !important; width: 100% !important; position: absolute; left: 0; top: 0; }
         }
         .code-added-highlight { background-color: rgba(254, 240, 138, 0.08); }
         
-        /* Institutional Color Palette Schematics */
         .header-coed { background-color: #1d4ed8 !important; color: white !important; }
         .header-coe { background-color: #7f1d1d !important; color: white !important; }
         .header-cans { background-color: #3f6212 !important; color: white !important; }
@@ -30,7 +28,6 @@
         .header-gs { background-color: #075985 !important; color: white !important; }
         .header-default { background-color: #1e293b !important; color: white !important; }
 
-        /* Dynamic Border Accent Classes */
         .border-coed { border-color: #1d4ed8 !important; }
         .border-coe { border-color: #7f1d1d !important; }
         .border-cans { border-color: #3f6212 !important; }
@@ -38,7 +35,6 @@
         .border-gs { border-color: #075985 !important; }
         .border-default { border-color: #1e293b !important; }
 
-        /* Dynamic Soft Background Accent Classes */
         .bg-coed-soft { background-color: rgba(29, 78, 216, 0.05) !important; }
         .bg-coe-soft { background-color: rgba(127, 29, 29, 0.05) !important; }
         .bg-cans-soft { background-color: rgba(63, 98, 18, 0.05) !important; }
@@ -46,7 +42,6 @@
         .bg-gs-soft { background-color: rgba(7, 89, 133, 0.05) !important; }
         .bg-default-soft { background-color: rgba(30, 41, 59, 0.05) !important; }
 
-        /* Dynamic Text Colors matching palette */
         .text-coed { color: #1d4ed8 !important; }
         .text-coe { color: #7f1d1d !important; }
         .text-cans { color: #3f6212 !important; }
@@ -64,20 +59,32 @@
                 <p class="text-sm text-blue-200">Class Matrix & Faculty Workload Automated Generator</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Active Term Selection Controls -->
-                <div class="flex items-center gap-2 bg-blue-900/80 p-1.5 rounded-lg border border-blue-800">
-                    <select id="globalSemesterSelect" class="bg-blue-950 text-white text-xs font-semibold px-2.5 py-1 rounded outline-none cursor-pointer border border-blue-700" onchange="updateGlobalAcademicTerm()">
-                        <option value="First Semester">First Semester</option>
-                        <option value="Second Semester" selected>Second Semester</option>
-                        <option value="Summer">Summer</option>
-                    </select>
-                    <select id="globalSchoolYearSelect" class="bg-blue-950 text-white text-xs font-semibold px-2.5 py-1 rounded outline-none cursor-pointer border border-blue-700" onchange="updateGlobalAcademicTerm()">
-                        <option value="2025 - 2026">AY 2025 - 2026</option>
-                        <option value="2026 - 2027" selected>AY 2026 - 2027</option>
-                        <option value="2027 - 2028">AY 2027 - 2028</option>
-                        <option value="2028 - 2029">AY 2028 - 2029</option>
-                    </select>
+                <!-- Admin Auth Badge & Controls -->
+                <div id="adminAuthControlBadge" class="flex items-center gap-2 bg-blue-900/90 p-1.5 rounded-lg border border-blue-800">
+                    <button id="adminLoginBtn" onclick="openAdminLoginModal()" class="bg-amber-500 hover:bg-amber-600 text-blue-950 font-black text-xs px-3 py-1.5 rounded shadow-xs cursor-pointer transition">
+                        🔒 Admin Login
+                    </button>
+                    <div id="adminControlsContainer" class="hidden flex items-center gap-2">
+                        <span class="text-[11px] font-extrabold text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded border border-emerald-800">
+                            🔑 Admin Active
+                        </span>
+                        <select id="globalSemesterSelect" class="bg-blue-950 text-white text-xs font-semibold px-2 py-1 rounded outline-none cursor-pointer border border-blue-700" onchange="updateGlobalAcademicTerm()">
+                            <option value="First Semester">First Semester</option>
+                            <option value="Second Semester" selected>Second Semester</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                        <select id="globalSchoolYearSelect" class="bg-blue-950 text-white text-xs font-semibold px-2 py-1 rounded outline-none cursor-pointer border border-blue-700" onchange="updateGlobalAcademicTerm()">
+                            <option value="2025 - 2026">AY 2025 - 2026</option>
+                            <option value="2026 - 2027" selected>AY 2026 - 2027</option>
+                            <option value="2027 - 2028">AY 2027 - 2028</option>
+                            <option value="2028 - 2029">AY 2028 - 2029</option>
+                        </select>
+                        <button onclick="logoutAdminSession()" class="text-xs text-blue-200 hover:text-white underline font-semibold px-1 cursor-pointer">
+                            Logout
+                        </button>
+                    </div>
                 </div>
+
                 <button onclick="purgeLocalStorageCache()" class="bg-red-950 hover:bg-red-900 border border-red-700 text-red-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer">
                     🚨 Wipe Database Cache
                 </button>
@@ -116,8 +123,9 @@
             </nav>
         </div>
 
+        <!-- Dashboard Section -->
         <section id="dashboard-view" class="tab-content bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-            <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+            <div class="border-b border-gray-100 pb-4 flex justify-between items-center flex-wrap gap-2">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900">Academic Analytics Summary</h2>
                     <p class="text-sm text-gray-500">Real-time summary tracking university loading balances, policy standard compliance ratios, and program structural distributions.</p>
@@ -222,10 +230,11 @@
             </div>
         </section>
 
+        <!-- Ingestion Engine Section -->
         <section id="upload-view" class="tab-content hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
             <div class="border-b border-gray-100 pb-4">
                 <h2 class="text-xl font-bold text-gray-900">Document Ingestion & Parsing Engine</h2>
-                <p class="text-sm text-gray-500">Select a target college destination. Clean CSV spreadsheet lines parsed here are **permanently appended** into browser local storage under the currently active Semester and School Year.</p>
+                <p class="text-sm text-gray-500">Select a target college destination. CSV spreadsheet lines parsed here are automatically bound to the active <strong class="text-blue-950 font-bold" id="uploadActiveTermLabel">Second Semester | AY 2026 - 2027</strong>.</p>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -269,6 +278,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             </div>
         </section>
 
+        <!-- Manual Encoder Section -->
         <section id="encoder-view" class="tab-content hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="border-b border-gray-100 pb-4 mb-6">
                 <h2 class="text-xl font-bold text-gray-900">Manual Entry Wizard</h2>
@@ -371,13 +381,14 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                 </div>
 
                 <div class="md:col-span-3 flex justify-end pt-2">
-                    <button type="submit" class="bg-blue-950 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-lg shadow-sm transition transform active:scale-95 cursor-pointer">
+                    <button type="submit" class="bg-blue-950 hover:bg-blue-900 text-white font-semibold px-6 py-2.5 rounded-lg shadow-sm transition transform active:scale-95 cursor-pointer">
                         Append to Schedules
                     </button>
                 </div>
             </form>
         </section>
 
+        <!-- Master Class Program Section -->
         <section id="schedule-view" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 tab-content">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-4 gap-4">
                 <div>
@@ -396,6 +407,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             <div id="masterScheduleContainer" class="space-y-8"></div>
         </section>
 
+        <!-- Class Schedule Report Section -->
         <section id="program-schedule-view" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 tab-content">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-100 pb-4 mb-6 gap-4">
                 <div>
@@ -429,6 +441,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             <div id="programScheduleReportContainer" class="space-y-6"></div>
         </section>
 
+        <!-- Summary Section -->
         <section id="summary-view" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 tab-content space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-100 pb-5 gap-4">
                 <div>
@@ -441,7 +454,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                         <button onclick="changeSummaryGrouping('none')" id="group-none-btn" class="bg-blue-950 text-white font-bold text-xs px-3 py-1.5 rounded-md cursor-pointer">Flat List</button>
                         <button onclick="changeSummaryGrouping('college')" id="group-college-btn" class="bg-white text-gray-700 hover:bg-gray-100 text-xs px-3 py-1.5 rounded-md border border-gray-200 cursor-pointer">By College</button>
                         <button onclick="changeSummaryGrouping('program')" id="group-program-btn" class="bg-white text-gray-700 hover:bg-gray-100 text-xs px-3 py-1.5 rounded-md border border-gray-200 cursor-pointer">By Program</button>
-                        <button onclick="changeSummaryGrouping('matrix-tab')" id="group-matrix-btn" class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 font-medium text-xs px-3 py-1.5 rounded-md border border-gray-200 cursor-pointer">📋 General Workload Matrix</button>
+                        <button onclick="changeSummaryGrouping('matrix-tab')" id="group-matrix-btn" class="bg-white text-gray-700 hover:bg-gray-100 text-xs px-3 py-1.5 rounded-md border border-gray-200 cursor-pointer">📋 General Workload Matrix</button>
                     </div>
                     <div id="sortingControlsContainer" class="flex items-center gap-1 border-l pl-3 border-gray-300">
                         <span class="text-xs font-bold uppercase text-gray-500 mr-1">Sort Metrics:</span>
@@ -492,6 +505,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             <div id="summaryDashboardDynamicContent" class="overflow-x-auto"></div>
         </section>
 
+        <!-- Individual Workload Sheets Section -->
         <section id="workload-view" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 tab-content">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-100 pb-4 mb-6 gap-4">
                 <div>
@@ -517,12 +531,6 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                         <button onclick="triggerWorkloadExport('pdf')" class="bg-red-700 hover:bg-red-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-md cursor-pointer">📄 PDF</button>
                         <button onclick="triggerWorkloadExport('docx')" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-md cursor-pointer">📝 Word</button>
                         <button onclick="triggerWorkloadExport('xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-md cursor-pointer">📊 Excel</button>
-                        <select id="workloadScopeSelector" class="bg-white border border-gray-300 rounded-md px-2 py-1 text-xs outline-none font-medium text-gray-700">
-                            <option value="current">Current Selection Scope</option>
-                            <option value="all">As a Whole (All Combined)</option>
-                            <option value="college">Separated Per College</option>
-                            <option value="program">Separated Per Program</option>
-                        </select>
                     </div>
                     <button onclick="window.print()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-medium px-3 py-1.5 rounded-md text-xs cursor-pointer">🖨 Print</button>
                 </div>
@@ -530,6 +538,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             <div id="workloadSheetsContainer" class="space-y-6"></div>
         </section>
 
+        <!-- Management Section -->
         <section id="management-view" class="hidden space-y-8 tab-content">
             <div class="bg-white p-4 rounded-xl border border-gray-200 flex flex-wrap gap-2 shadow-sm">
                 <button onclick="switchRegistryTab('reg-programs')" id="subtab-reg-programs" class="reg-tab-btn bg-blue-950 text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer">🎓 Programs Registry</button>
@@ -585,6 +594,35 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             </div>
         </section>
 
+        <!-- Admin Login Modal -->
+        <div id="adminLoginModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-5 border border-gray-200">
+                <div class="text-center border-b pb-3">
+                    <div class="text-2xl mb-1">🔐</div>
+                    <h3 class="text-lg font-bold text-gray-900">Administrator Access</h3>
+                    <p class="text-xs text-gray-500">Authenticate to configure active semester & school year.</p>
+                </div>
+                <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Admin Username</label>
+                        <input type="text" id="adminUsernameInput" placeholder="ESSUSC" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Password</label>
+                        <input type="password" id="adminPasswordInput" placeholder="••••••••" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div id="adminLoginError" class="text-xs text-red-600 font-bold text-center hidden bg-red-50 p-2 rounded border border-red-100">
+                        Invalid username or password.
+                    </div>
+                    <div class="flex justify-end gap-2 border-t pt-3">
+                        <button type="button" onclick="closeAdminLoginModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer">Cancel</button>
+                        <button type="submit" class="bg-blue-950 hover:bg-blue-900 text-white px-5 py-2 rounded-lg text-xs font-bold cursor-pointer">Login Admin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Schedule Update Modal -->
         <div id="scheduleUpdateModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -626,6 +664,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             </div>
         </div>
 
+        <!-- Registries Global Modal -->
         <div id="registryGlobalModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -729,9 +768,10 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
         let registeredRooms = [];
         let sharedSchedules = [];
 
-        // Global Active Term Controls
+        // Global Active Term & Admin State Controls
         let currentSemester = "Second Semester";
         let currentSchoolYear = "2026 - 2027";
+        let isAdminLoggedIn = false;
 
         // Global Chart Registry Objects
         let collegeShareChartInstance = null;
@@ -779,32 +819,73 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             "Lecturer": 18
         };
 
+        // ADMIN AUTHENTICATION ENGINE
+        function openAdminLoginModal() {
+            document.getElementById("adminLoginError").classList.add("hidden");
+            document.getElementById("adminLoginForm").reset();
+            document.getElementById("adminLoginModal").classList.remove("hidden");
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById("adminLoginModal").classList.add("hidden");
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const u = document.getElementById("adminUsernameInput").value.trim();
+            const p = document.getElementById("adminPasswordInput").value.trim();
+
+            if (u === "ESSUSC" && p === "ESSUSC") {
+                isAdminLoggedIn = true;
+                sessionStorage.setItem("sws_admin_authenticated", "true");
+                closeAdminLoginModal();
+                syncAdminStateUI();
+            } else {
+                document.getElementById("adminLoginError").classList.remove("hidden");
+            }
+        }
+
+        function logoutAdminSession() {
+            isAdminLoggedIn = false;
+            sessionStorage.removeItem("sws_admin_authenticated");
+            syncAdminStateUI();
+        }
+
+        function syncAdminStateUI() {
+            const loginBtn = document.getElementById("adminLoginBtn");
+            const adminControls = document.getElementById("adminControlsContainer");
+
+            if (isAdminLoggedIn) {
+                if (loginBtn) loginBtn.classList.add("hidden");
+                if (adminControls) adminControls.classList.remove("hidden");
+            } else {
+                if (loginBtn) loginBtn.classList.remove("hidden");
+                if (adminControls) adminControls.classList.add("hidden");
+            }
+        }
+
         function updateGlobalAcademicTerm() {
             currentSemester = document.getElementById("globalSemesterSelect").value;
             currentSchoolYear = document.getElementById("globalSchoolYearSelect").value;
             
-            // Sync with Manual Encoder defaults
             if (document.getElementById("encoderSemester")) document.getElementById("encoderSemester").value = currentSemester;
             if (document.getElementById("encoderSchoolYear")) document.getElementById("encoderSchoolYear").value = currentSchoolYear;
 
-            // Sync Dashboard Badge
             const badge = document.getElementById("dashboardActiveTermBadge");
             if (badge) badge.textContent = `${currentSemester} | AY ${currentSchoolYear}`;
+
+            const uploadLabel = document.getElementById("uploadActiveTermLabel");
+            if (uploadLabel) uploadLabel.textContent = `${currentSemester} | AY ${currentSchoolYear}`;
 
             executeRegistryDataSynchronization();
         }
 
         function getDesignationBadgeStyles(designation) {
             const des = String(designation || '').trim();
-            if (des === 'Dean' || des === 'Director') {
-                return 'bg-red-100 text-red-800 border border-red-200 font-extrabold shadow-xs';
-            } else if (des === 'Head' || des === 'Program Head') {
-                return 'bg-purple-100 text-purple-800 border border-purple-200 font-bold';
-            } else if (des === 'Coordinator / In-Charge') {
-                return 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold';
-            } else if (des === 'Lecturer') {
-                return 'bg-amber-100 text-amber-800 border border-amber-200';
-            }
+            if (des === 'Dean' || des === 'Director') return 'bg-red-100 text-red-800 border border-red-200 font-extrabold shadow-xs';
+            if (des === 'Head' || des === 'Program Head') return 'bg-purple-100 text-purple-800 border border-purple-200 font-bold';
+            if (des === 'Coordinator / In-Charge') return 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold';
+            if (des === 'Lecturer') return 'bg-amber-100 text-amber-800 border border-amber-200';
             return 'bg-gray-100 text-gray-700 border border-gray-200';
         }
 
@@ -812,8 +893,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             if(!timeString || !timeString.includes(':')) return "";
             let [h, m] = timeString.split(':').map(Number);
             let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12; 
+            h = h % 12; h = h ? h : 12; 
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
         }
 
@@ -825,16 +905,6 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             if (key === 'CCS') return 'header-ccs';
             if (key === 'GRADUATE STUDIES' || key === 'GS') return 'header-gs';
             return 'header-default';
-        }
-
-        function getCollegeHexCode(collegeKey) {
-            const key = String(collegeKey).toUpperCase();
-            if (key === 'COED') return [29, 78, 216];
-            if (key === 'COE') return [127, 29, 29];
-            if (key === 'CANS') return [63, 98, 18];
-            if (key === 'CCS') return [107, 33, 168];
-            if (key === 'GRADUATE STUDIES' || key === 'GS') return [7, 89, 133];
-            return [30, 41, 59];
         }
 
         function getCollegeNormalizedStyleKey(collegeKey) {
@@ -855,7 +925,6 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                 registeredRooms = JSON.parse(localStorage.getItem("hub_registeredRooms")) || defaultRooms;
                 sharedSchedules = JSON.parse(localStorage.getItem("hub_sharedSchedules")) || defaultSchedules;
 
-                // Ensure retro-compatibility for schedule terms
                 sharedSchedules.forEach(s => {
                     if (!s.semester) s.semester = currentSemester;
                     if (!s.schoolYear) s.schoolYear = currentSchoolYear;
@@ -869,6 +938,11 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             } catch (err) {
                 loadFactoryStateDefaults();
             }
+
+            if (sessionStorage.getItem("sws_admin_authenticated") === "true") {
+                isAdminLoggedIn = true;
+            }
+            syncAdminStateUI();
         }
 
         function saveSystemStateToLocalStorage() {
@@ -1034,11 +1108,9 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             
             saveSystemStateToLocalStorage();
             executeRegistryDataSynchronization();
-            alert(`✅ Ingestion Complete! Merged entry expanded by ${parsedCount} lines.`);
+            alert(`✅ Ingestion Complete! Merged entry expanded by ${parsedCount} lines for ${currentSemester} (AY ${currentSchoolYear}).`);
             switchTab('dashboard-view');
         }
-
-        function fontScaleString(val, lim) { return String(val).length > lim ? 'text-[10px]' : 'text-xs'; }
 
         function sortFacultyClassesChronologically(list) {
             const weights = { "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4, "friday": 5, "saturday": 6, "monday and wednesday": 1.5, "tuesday and thursday": 2.5 };
@@ -1061,13 +1133,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             let totalAuditedFaculty = 0;
 
             let distinctUndergradCourses = new Set();
-            let classroomsPerCollege = {
-                "COE": new Set(),
-                "CCS": new Set(),
-                "COEd": new Set(),
-                "CANS": new Set(),
-                "Graduate Studies": new Set()
-            };
+            let classroomsPerCollege = { "COE": new Set(), "CCS": new Set(), "COEd": new Set(), "CANS": new Set(), "Graduate Studies": new Set() };
 
             activeSchedules.forEach(s => {
                 if (s.college !== "Graduate Studies" && s.subjectTitle) {
@@ -1188,7 +1254,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
 
                 if (printedDeficiencies === 0) {
                     nonCompliantContainer.className = "block w-full text-center p-6 border border-dashed rounded-xl bg-emerald-50/10 text-emerald-700 font-bold text-xs";
-                    nonCompliantContainer.innerHTML = "✨ Complete Curricular Balance Verified! All operational faculty profiles match designation standards or satisfy the secondary 20-hour load criteria.";
+                    nonCompliantContainer.innerHTML = `✨ Complete Curricular Balance Verified for ${currentSemester} (AY ${currentSchoolYear})! All faculty profiles match designation standards or satisfy the secondary load criteria.`;
                 } else {
                     nonCompliantContainer.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full";
                 }
@@ -1199,7 +1265,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                 performersGrid.innerHTML = "";
                 Object.keys(collegeAudit).forEach(col => {
                     let topFac = collegeAudit[col].topFaculty;
-                    if (topFac) {
+                    if (topFac && topFac.units > 0) {
                         performersGrid.innerHTML += `
                             <div class="p-3 border rounded-xl bg-gray-50/50 space-y-1">
                                 <div class="text-[10px] font-extrabold uppercase text-indigo-700 tracking-wider">${col} Department Leader</div>
@@ -1215,7 +1281,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                         performersGrid.innerHTML += `
                             <div class="p-3 border border-dashed rounded-xl flex flex-col justify-center items-center text-center text-gray-400 bg-gray-50/20">
                                 <div class="text-[10px] font-bold uppercase tracking-wider">${col} Division</div>
-                                <div class="text-[11px] italic font-medium">No Compliant Record</div>
+                                <div class="text-[11px] italic font-medium">No Active Class Loads</div>
                             </div>
                         `;
                     }
@@ -1241,10 +1307,10 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                 });
             }
             
-            let sortedFaculty = [...dataset].sort((a, b) => b.units - a.units).slice(0, 10);
-            let facLabels = sortedFaculty.map(f => f.name.split(',')[0]); 
-            let facUnits = sortedFaculty.map(f => f.units);
-            let facHours = sortedFaculty.map(f => f.hours);
+            let sortedFaculty = [...dataset].filter(f => f.units > 0).sort((a, b) => b.units - a.units).slice(0, 10);
+            let facLabels = sortedFaculty.length > 0 ? sortedFaculty.map(f => f.name.split(',')[0]) : ["No Records"]; 
+            let facUnits = sortedFaculty.length > 0 ? sortedFaculty.map(f => f.units) : [0];
+            let facHours = sortedFaculty.length > 0 ? sortedFaculty.map(f => f.hours) : [0];
             
             if (workloadChartInstance) workloadChartInstance.destroy();
             const ctx2 = document.getElementById("facultyWorkloadChart")?.getContext("2d");
@@ -1313,7 +1379,12 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             let activeSchedules = getActiveTermSchedules();
 
             if (activeSchedules.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400 border border-dashed rounded-xl">No master schedule entries recorded for ${currentSemester} (AY ${currentSchoolYear}).</div>`;
+                container.innerHTML = `
+                    <div class="p-10 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 space-y-3">
+                        <div class="text-3xl">🗓️</div>
+                        <div class="text-sm font-bold text-gray-700">Blank Schedule Matrix for ${currentSemester} (AY ${currentSchoolYear})</div>
+                        <p class="text-xs text-gray-500 max-w-md mx-auto">No class schedules are recorded for this term yet. Use the <strong class="text-blue-950">Manual Encoder</strong> or <strong class="text-blue-950">Ingestion Engine</strong> to assign classes to your existing faculty roster.</p>
+                    </div>`;
                 return;
             }
 
@@ -1628,7 +1699,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                     pr.add(c.subjectTitle); if(c.program) progs.add(c.program); subList.push(c.subjectTitle);
                 });
                 return { name: p.name, homeCollege: p.college || "COE", rank: p.rank || 'Instructor I', designation: p.designation || 'Without Designation', units: u, hours: h, prepsCount: pr.size, programs: Array.from(progs), subjects: subList };
-            }).filter(x => x.units > 0 || x.designation !== 'Without Designation');
+            });
         }
 
         function createSummaryComplianceBadgeHTML(units, hours, designation, rank) {
@@ -1639,7 +1710,6 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             return `<span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded ml-2">⚠️ Deficit (-${req - units} U)</span>`;
         }
 
-        /* FIXED LOG MATRIX GENERATOR ENGINE */
         function printWorkloadMatrixReport() {
             let dataset = getAggregatedFacultyMetricsList();
             if(dataset.length === 0) { alert(`No active load logs detected for ${currentSemester} (${currentSchoolYear}) to create a matrix print.`); return; }
@@ -1736,11 +1806,6 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             const container = document.getElementById("summaryDashboardDynamicContent"); if(!container) return;
             container.innerHTML = "";
             let dataset = getAggregatedFacultyMetricsList(); 
-            
-            if(dataset.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400 border border-dashed rounded-xl">No active faculty workload summaries found for ${currentSemester} (AY ${currentSchoolYear}).</div>`;
-                return;
-            }
 
             if (currentSummaryGroupingMode === 'matrix-tab') {
                 dataset.sort((a,b) => currentSummarySortMetric==='units' ? b.units - a.units : b.hours - a.hours);
@@ -1756,7 +1821,8 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                         else statusElement = `<div class="text-red-600 font-extrabold text-center text-xs tracking-wider">NON-COMPLIANT</div>`;
                     }
                     let normKey = getCollegeNormalizedStyleKey(faculty.homeCollege);
-                    matrixHeaderRows += `<tr class="border-t border-gray-300 text-gray-900 bg-white"><td class="border-x border-gray-300 p-2.5 font-bold text-gray-800">${faculty.name} <span class="text-xs text-indigo-900">(${faculty.homeCollege})</span></td><td class="border-r border-gray-300 p-2.5 leading-normal text-gray-600">${[...new Set(faculty.subjects)].join("; ")}</td><td class="border-r border-gray-300 p-2.5 text-center font-bold text-sm bg-gray-50/20">${faculty.units}</td><td class="border-r border-gray-300 p-2.5 text-center font-mono">${faculty.hours.toFixed(1)}</td><td class="border-r border-gray-300 p-2.5 text-center">${faculty.prepsCount}</td><td class="border-r border-gray-300 p-2.5 text-center align-middle bg-gray-50/40 font-bold" rowspan="2">${statusElement}</td></tr><tr class="border-b border-gray-300 text-[11px] text-gray-500"><td class="border-x border-b border-gray-300 p-2 px-3 italic" colspan="5">Rank: <strong>${faculty.rank}</strong> &nbsp;|&nbsp; Role: <span class="font-bold text-${normKey}">${faculty.designation}</span></td></tr>`;
+                    let subText = faculty.subjects.length > 0 ? [...new Set(faculty.subjects)].join("; ") : "<em>No Assigned Subject Block</em>";
+                    matrixHeaderRows += `<tr class="border-t border-gray-300 text-gray-900 bg-white"><td class="border-x border-gray-300 p-2.5 font-bold text-gray-800">${faculty.name} <span class="text-xs text-indigo-900">(${faculty.homeCollege})</span></td><td class="border-r border-gray-300 p-2.5 leading-normal text-gray-600">${subText}</td><td class="border-r border-gray-300 p-2.5 text-center font-bold text-sm bg-gray-50/20">${faculty.units}</td><td class="border-r border-gray-300 p-2.5 text-center font-mono">${faculty.hours.toFixed(1)}</td><td class="border-r border-gray-300 p-2.5 text-center">${faculty.prepsCount}</td><td class="border-r border-gray-300 p-2.5 text-center align-middle bg-gray-50/40 font-bold" rowspan="2">${statusElement}</td></tr><tr class="border-b border-gray-300 text-[11px] text-gray-500"><td class="border-x border-b border-gray-300 p-2 px-3 italic" colspan="5">Rank: <strong>${faculty.rank}</strong> &nbsp;|&nbsp; Role: <span class="font-bold text-${normKey}">${faculty.designation}</span></td></tr>`;
                 });
                 container.innerHTML = matrixHeaderRows + `</tbody></table></div>`; return;
             }
@@ -1800,6 +1866,10 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
                     <td class="p-3 text-left">${c.subjectTitle}</td><td class="p-3 font-bold">${c.unifiedUnits}</td><td class="p-3 font-mono">${hrs.toFixed(1)}</td><td class="p-3">${c.classSection}</td><td class="p-3 font-mono">${c.roomNumber}</td>
                 </tr>`;
             }).join('');
+
+            if (classes.length === 0) {
+                rows = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic font-medium">Blank Workload Sheet (No assigned teaching blocks recorded for ${currentSemester} AY ${currentSchoolYear})</td></tr>`;
+            }
 
             let isSheetCompliant = (uTot >= requiredMinUnits) || (hTot >= 20);
             let statusBadge = facultyObj.rank === "TBA" ? `<span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-bold ml-2">Review Pending</span>` : (isSheetCompliant ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold ml-2">✅ Verified Compliant</span>` : `<span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-bold ml-2">⚠️ Below Parameter</span>`);
@@ -1851,16 +1921,10 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             let activeSchedules = getActiveTermSchedules();
             let list = facultyFilter !== "ALL" ? [facultyFilter] : (collegeScope === "ALL" ? registeredFaculty : registeredFaculty.filter(f => f.college === collegeScope)).map(f => f.name).sort();
             
-            let renderedCount = 0;
             list.forEach(prof => {
-                let clList = activeSchedules.filter(s => s.instructorName === prof); if(clList.length === 0) return;
+                let clList = activeSchedules.filter(s => s.instructorName === prof);
                 container.innerHTML += buildWorkloadHTML(prof, sortFacultyClassesChronologically(clList));
-                renderedCount++;
             });
-
-            if (renderedCount === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400 border border-dashed rounded-xl">No instructional workloads found for ${currentSemester} (AY ${currentSchoolYear}).</div>`;
-            }
         }
 
         function exportFacultySummaryExcelGrouped() {
@@ -1886,13 +1950,14 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             workloadMap.forEach(packageItem => {
                 const doc = new jsPDF('p', 'mm', 'a4'); let added = 0;
                 packageItem.members.forEach(prof => {
-                    let clList = activeSchedules.filter(s => s.instructorName === prof); if (clList.length === 0) return;
+                    let clList = activeSchedules.filter(s => s.instructorName === prof);
                     if (added > 0) doc.addPage(); added++;
                     let classes = sortFacultyClassesChronologically(clList);
-                    let fObj = registeredFaculty.find(f => f.name === prof) || { name: prof, college: "COE", rank: "Instructor I", designation: "Without Designation" };
                     doc.setFontSize(14); doc.text("INDIVIDUAL FACULTY WORKLOAD SHEET", 105, 12, { align: "center" });
                     doc.setFontSize(10); doc.text(`${currentSemester} | AY ${currentSchoolYear}`, 105, 18, { align: "center" });
-                    let body = classes.map(c => [c.dayAssignment, c.subjectTitle, c.unifiedUnits, calculateWeeklyHours(c.dayAssignment, c.startTime, c.endTime).toFixed(1), c.classSection, c.roomNumber]);
+                    let body = classes.length > 0 
+                        ? classes.map(c => [c.dayAssignment, c.subjectTitle, c.unifiedUnits, calculateWeeklyHours(c.dayAssignment, c.startTime, c.endTime).toFixed(1), c.classSection, c.roomNumber])
+                        : [["-", "Blank Workload Sheet", "0", "0.0", "-", "-"]];
                     doc.autoTable({ startY: 25, head: [['Day/Time Bracket', 'Subject Title', 'Units', 'Hrs/Wk', 'Class block', 'Room']], body: body });
                 });
                 if(added > 0) doc.save(`${packageItem.titleId}_${currentSemester}_AY${currentSchoolYear}.pdf`);
@@ -1904,7 +1969,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             workloadMap.forEach(packageItem => {
                 let wb = XLSX.utils.book_new();
                 packageItem.members.forEach(prof => {
-                    let clList = activeSchedules.filter(s => s.instructorName === prof); if (clList.length === 0) return;
+                    let clList = activeSchedules.filter(s => s.instructorName === prof);
                     let matrixData = [["INDIVIDUAL FACULTY WORKLOAD SHEET"], [`Term: ${currentSemester} | AY ${currentSchoolYear}`], [prof], ["Day/Time", "Subject Title", "Units", "Room"]];
                     sortFacultyClassesChronologically(clList).forEach(c => matrixData.push([c.dayAssignment, c.subjectTitle, c.unifiedUnits, c.roomNumber]));
                     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matrixData), prof.substring(0,30));
@@ -1919,9 +1984,12 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
             workloadMap.forEach(packageItem => {
                 let sectionChildren = [];
                 packageItem.members.forEach(prof => {
-                    let clList = activeSchedules.filter(s => s.instructorName === prof); if (clList.length === 0) return;
+                    let clList = activeSchedules.filter(s => s.instructorName === prof);
                     sectionChildren.push(new Paragraph({ text: `FACULTY WORKLOAD SHEET: ${prof} (${currentSemester} | AY ${currentSchoolYear})`, bold: true }));
                     let tRows = sortFacultyClassesChronologically(clList).map(c => new TableRow({ children: [new TableCell({ children: [new Paragraph(c.subjectTitle)] })] }));
+                    if (tRows.length === 0) {
+                        tRows = [new TableRow({ children: [new TableCell({ children: [new Paragraph("Blank Workload Sheet")] })] })];
+                    }
                     sectionChildren.push(new Table({ rows: tRows }));
                 });
                 let doc = new Document({ sections: [{ children: sectionChildren }] });
@@ -1954,6 +2022,7 @@ BSABE III-2,Tuesday and Thursday (10:30 AM - 12:00 PM),ABE 312,3,Cabahug,COE-11<
         function exportMasterProgramPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); let first = true;
             let activeSchedules = getActiveTermSchedules();
+            if (activeSchedules.length === 0) { alert("Cannot export PDF: No active schedule entries recorded for this term."); return; }
             Object.keys(registeredPrograms).forEach(college => {
                 const recs = activeSchedules.filter(s => s.college === college); if (recs.length === 0) return;
                 if (!first) doc.addPage(); first = false;
