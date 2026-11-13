@@ -2,10 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Calendar, Clock, AlertTriangle, User, BookOpen, Building, 
   Upload, Download, Search, CheckCircle2, AlertCircle, RefreshCw, 
-  FileText, ShieldAlert, Users, Layers, Filter, Printer, ChevronRight, Sparkles
+  FileText, ShieldAlert, Users, Layers, Filter, Printer, ChevronRight,
+  Plus, Edit3, Trash2, X, Check, Image as ImageIcon, GraduationCap,
+  LayoutDashboard, Settings, Lock, Key, Shield, Info, School, MapPin
 } from 'lucide-react';
 
-// Official ESSU Seal Logo SVG Representation 
+// Official ESSU Seal Logo SVG Representation
 const ESSULogo = ({ className = "w-14 h-14" }) => (
   <svg className={className} viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="250" cy="250" r="240" fill="#006837" stroke="#FFC107" strokeWidth="12" />
@@ -18,7 +20,7 @@ const ESSULogo = ({ className = "w-14 h-14" }) => (
     <path d="M250 235 L250 260 M242 260 L258 260" stroke="#B45309" strokeWidth="4" />
     <path d="M190 300 Q250 270 310 300 M195 315 Q250 285 305 315 M200 330 Q250 300 300 330" stroke="#15803D" strokeWidth="4" fill="none" />
     <path d="M 140 260 A 130 130 0 1 1 360 260" id="textPath" fill="none" />
-    <text fill="#006837" fontSize="26" fontWidth="bold" fontWeight="900" letterSpacing="3">
+    <text fill="#006837" fontSize="26" fontWeight="900" letterSpacing="3">
       <textPath href="#textPath" startOffset="50%" textAnchor="middle">
         EASTERN SAMAR STATE UNIVERSITY
       </textPath>
@@ -28,7 +30,14 @@ const ESSULogo = ({ className = "w-14 h-14" }) => (
   </svg>
 );
 
-// Pre-loaded dataset provided directly from the prompt for ESSU Salcedo Campus - COE (SY 2025-2026)
+const COLLEGES = [
+  { id: 'COE', name: 'College of Engineering', code: 'COE' },
+  { id: 'COEd', name: 'College of Education', code: 'COEd' },
+  { id: 'CCS', name: 'College of Computer Studies', code: 'CCS' },
+  { id: 'CANS', name: 'College of Agriculture and Natural Sciences', code: 'CANS' }
+];
+
+// Pre-loaded dataset for all Colleges at ESSU Salcedo Campus
 const DEFAULT_RAW_SCHEDULE_TEXT = `COLLEGE OF ENGINEERING (COE) 
 CLASS PROGRAM
 Second Semester, SY 2025 - 2026
@@ -47,16 +56,6 @@ BACHELOR OF SCIENCE IN COMPUTER ENGINEERING I - 1
 | 10:30 – 12:00   | HUM 121 Art Appreciation   | 3   | Mr. Niño Laureano C. Lumagbas   | Rm 101 |
 | NOON INTERMISSION  <td colspan=5/> |
 | 03:30 – 05:00   | ENGG 121 Integral Calculus    | 3   | Engr. Kenan Dominic C. Berongoy   | Rm 101 |
-| Friday  <td colspan=5/> |
-| 08:00 – 12:00   | Research Work and Other Activities   |  |  |  |
-| NOON INTERMISSION  <td colspan=5/> |
-| 01:00 – 05:00   | Research Work and Other Activities   |  |  |  |
-| Saturday  <td colspan=5/> |
-| 08:00 – 11:00   | NSTP 2 National Service Training Program   | 3   | Mr. Cherlowen A. Bolito   | Field |
-Homeroom: 						Adviser:  
-Prepared by: ARVIN ANTHONY S. ARANETA, DMT, PCpE Program Head, BSCpE
-Recommending Approval: ARVIN ANTHONY S. ARANETA, DMT, PCpE Dean, COE
-Approved: EDUARDO A. CABLAO, JR., PhD Campus Administrator
 
 COLLEGE OF ENGINEERING (COE) 
 CLASS PROGRAM
@@ -75,12 +74,7 @@ BACHELOR OF SCIENCE IN COMPUTER ENGINEERING II - 1
 | 09:30 – 11:00   | CpE 222 Numerical Methods   | 3   | Dr. Alma P. Kuizon    | Rm 201 |
 | NOON INTERMISSION  <td colspan=5/> |
 | 01:00 – 04:00   | ECE 221 Fundamentals of Electronics Circuits   | 4   | Prof. Joseph G. Acebo   | Lab 1 |
-| 04:00 – 05:00   | PATHFIT 4 Choice of dance, Sports, Martial arts, Group Exercise, Outdoor  and Adventure Activities   | 2   | Mr. Franfel Quirante   | Gym |
-| Friday  <td colspan=5/> |
-| 08:00 – 12:00   | Research Work and other Activities   |  |  |  |
-| NOON INTERMISSION  <td colspan=5/> |
-| 01:00 – 05:00   | Research Work and other Activities   |  |  |  |
-Homeroom: 					Adviser: Engr. Jelinda M. Gulfre
+| 04:00 – 05:00   | PATHFIT 4 Choice of dance, Sports, Martial arts, Group Exercise   | 2   | Mr. Franfel Quirante   | Gym |
 
 COLLEGE OF ENGINEERING (COE) 
 CLASS PROGRAM
@@ -94,140 +88,106 @@ BACHELOR OF SCIENCE IN COMPUTER ENGINEERING III - 1
 | 01:00 – 04:00   | CpE 322 Computer Network and Security   | 4   | Prof. Joseph G. Acebo   | Lab 1 |
 | Tuesday and Thursday  <td colspan=5/> |
 | 07:30 – 09:00   | Enng 311 Technopreneurship   | 3   | Engr. Alyssa Faye Y. Lagramada   | Rm 301 |
-| 09:00 – 10:30   | CpE 324 Methods of Research   (Fused with BSCpE III-2)   | 3   | Dr. Rovinson D. Gaganao   | Rm 301 |
+| 09:00 – 10:30   | CpE 324 Methods of Research   | 3   | Dr. Rovinson D. Gaganao   | Rm 301 |
 | 10:30 – 12:00   | CpE 321 Basic Occupational Health and Safety   | 3   | Dr. Jelinda M. Gulfre   | Rm 301 |
-| NOON INTERMISSION  <td colspan=5/> |
-| 01:00 – 02:00   | CpE 325 CpE Laws and Professional Practice   | 2   | Engr. Arvin Melson D. Ranido   | Rm 301 |
-| 02:00 - 04:30   | CpE 326 Cognate/Elective Course 2   | 3   | Engr. Alyssa Faye Y. Lagramada   | Rm 301 |
-| Friday  <td colspan=5/> |
-| 08:00 – 12:00   | Research Work and other Activities   |  |  |  |
 
-COLLEGE OF ENGINEERING (COE) 
+COLLEGE OF COMPUTER STUDIES (CCS) 
 CLASS PROGRAM
 Second Semester, SY 2025 – 2026
-BACHELOR OF SCIENCE IN COMPUTER ENGINEERING III - 2
+BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY I - 1
 | DAY/TIME   | SUBJECT   (CODE AND DESCRIPTION)   | NO. OF UNITS   | INSTRUCTOR/  PROFESSOR   | ROOM   |
 | <td colspan=5/> |
 | Monday and Wednesday  <td colspan=5/> |
-| 08:00 – 11:00   | CpE 322 Computer Network and Security   | 4   | Engr. Joseph G. Acebo   | Lab 2 |
-| NOON INTERMISSION  <td colspan=5/> |
-| 01:00 – 02:00   | CpE 325 CpE Laws and Professional Practice   | 2   | Engr. Arvin Melson D. Ranido   | Rm 302 |
-| 02:00 - 04:30   | CpE 326 Cognate/Elective Course 2   | 3   | Engr. Alyssa Faye Y. Lagramada   | Rm 302 |
+| 08:00 – 09:30   | IT 121 Introduction to Computing   | 3   | Engr. Jelinda M. Gulfre   | CompLab 1 |
+| 09:30 – 11:00   | IT 122 Computer Programming 1   | 3   | Dr. Joseph G. Acebo   | CompLab 1 |
 | Tuesday and Thursday  <td colspan=5/> |
-| 09:00 – 10:30   | CpE 321 Basic Occupational Health and Safety   | 3   | Dr. Jelinda M. Gulfre   | Rm 302 |
-| 10:30 – 12:00   | CpE 324 Methods of Research   (Fused with BSCpE III-1)   | 3   | Prof. Rovinson D. Gaganao   | Rm 301 |
-| NOON INTERMISSION  <td colspan=5/> |
-| 08:00 – 09:30   | Enng 311 Technopreneurship   | 3   | Engr. Alyssa Faye Y. Lagramada   | Rm 302 |
-| Friday  <td colspan=5/> |
-| 08:00 – 12:00   | CpE 323 Microprocessors   | 4   | Engr. Arvin Melson D. Ranido   | Lab 3 |
+| 01:00 – 02:30   | IT 123 Discrete Structures   | 3   | Mr. Marco C. Berongoy   | Rm 102 |
 
-COLLEGE OF ENGINEERING (COE) 
+COLLEGE OF EDUCATION (COEd) 
 CLASS PROGRAM
 Second Semester, SY 2025 – 2026
-BACHELOR OF SCIENCE IN COMPUTER ENGINEERING IV - 1
+BACHELOR OF SECONDARY EDUCATION II - 1
 | DAY/TIME   | SUBJECT   (CODE AND DESCRIPTION)   | NO. OF UNITS   | INSTRUCTOR/  PROFESSOR   | ROOM   |
 | <td colspan=5/> |
 | Monday and Wednesday  <td colspan=5/> |
-| 08:00 – 09:30   | CpE 422 Seminars and Fieldtrips   | 3   | Dr. Jelinda M. Gulfre   | Rm 401 |
-| Tuesday and Thursday  <td colspan=5/> |
-| 08:00 – 12:00   | CpE 421 CpE Practice and Design 2   | 2   | Dr. Arvin Anthony S. Araneta   | Lab 4 |
+| 08:00 – 09:30   | EDUC 221 Facilitating Learner-Centered Teaching   | 3   | Ms. Salome Borela   | EdRm 1 |
+| 10:00 – 11:30   | EDUC 222 Assessment in Learning 1   | 3   | Mr. Cherlowen A. Bolito   | EdRm 1 |
 
-COLLEGE OF ENGINEERING (COE) 
+COLLEGE OF AGRICULTURE AND NATURAL SCIENCES (CANS) 
 CLASS PROGRAM
 Second Semester, SY 2025 – 2026
-BACHELOR OF SCIENCE IN COMPUTER ENGINEERING IV - 2
+BACHELOR OF SCIENCE IN AGRICULTURE I - 1
 | DAY/TIME   | SUBJECT   (CODE AND DESCRIPTION)   | NO. OF UNITS   | INSTRUCTOR/  PROFESSOR   | ROOM   |
 | <td colspan=5/> |
-| Monday and Wednesday  <td colspan=5/> |
-| 09:30 – 11:00   | CpE 422 Seminars and Fieldtrips   | 3   | Dr. Jelinda M. Gulfre   | Rm 401 |
 | Tuesday and Thursday  <td colspan=5/> |
-| 08:00 – 12:00   | CpE 421 CpE Practice and Design 2   | 2   | Dr. Arvin Anthony S. Araneta   | Lab 4 |
+| 08:00 – 10:00   | AGRI 121 Principles of Crop Production   | 3   | Ms. Rizza Isabelle S. Aguedan   | AgriLab |
+| 10:00 – 12:00   | AGRI 122 Introduction to Soil Science   | 3   | Dr. Alma P. Kuizon   | AgriLab |
 `;
 
-// Helper: Standardize instructor names for robust conflict matching
 const cleanInstructorName = (name) => {
   if (!name) return '';
   return name
     .trim()
-    .replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.|Engr\.|Prof\.)\s+/i, '') // Strips titles for match consistency
+    .replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.|Engr\.|Prof\.)\s+/i, '')
     .replace(/\s+/g, ' ');
 };
 
-// Helper: Convert time string "07:30" or "07:30 – 09:00" into minutes from midnight
 const parseTimeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
   const parts = timeStr.trim().split(':');
   if (parts.length < 2) return 0;
   let hours = parseInt(parts[0], 10);
   const minutes = parseInt(parts[1], 10);
-
-  // Simple heuristic for 12-hour clock when strictly given in 01:00-05:00 range for afternoon
-  if (hours < 7) {
-    hours += 12; // PM times like 01:00, 02:30, 04:00
-  }
+  if (hours < 7) hours += 12;
   return hours * 60 + minutes;
 };
 
-// Parse raw text table format into structured schedule entries
 const parseScheduleText = (text) => {
   const lines = text.split('\n');
   const parsedEntries = [];
 
-  let currentProgram = 'General Schedule';
+  let currentCollege = 'COE';
+  let currentProgram = 'General Program';
   let currentDays = [];
-  let idCounter = 1;
+  let idCounter = Date.now();
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Check for Program/Section header
-    if (line.includes('BACHELOR OF SCIENCE') || line.includes('BSCpE') || line.startsWith('BACHELOR')) {
-      const match = line.match(/(BACHELOR OF SCIENCE IN [^|\n]+)/i);
+    if (line.includes('COLLEGE OF ENGINEERING') || line.includes('(COE)')) currentCollege = 'COE';
+    else if (line.includes('COLLEGE OF EDUCATION') || line.includes('(COEd)')) currentCollege = 'COEd';
+    else if (line.includes('COLLEGE OF COMPUTER STUDIES') || line.includes('(CCS)')) currentCollege = 'CCS';
+    else if (line.includes('COLLEGE OF AGRICULTURE') || line.includes('(CANS)')) currentCollege = 'CANS';
+
+    if (line.includes('BACHELOR OF SCIENCE') || line.includes('BACHELOR OF SECONDARY') || line.includes('BS') || line.startsWith('BACHELOR')) {
+      const match = line.match(/((?:BACHELOR|BS)[^|\n]+)/i);
       if (match) {
         currentProgram = match[1].replace(/\|/g, '').trim();
-      } else {
-        currentProgram = line.replace(/\|/g, '').trim();
       }
       continue;
     }
 
-    // Check for Day headers
-    if (line.includes('Monday and Wednesday')) {
-      currentDays = ['Monday', 'Wednesday'];
-      continue;
-    } else if (line.includes('Tuesday and Thursday')) {
-      currentDays = ['Tuesday', 'Thursday'];
-      continue;
-    } else if (line.includes('Friday')) {
-      currentDays = ['Friday'];
-      continue;
-    } else if (line.includes('Saturday')) {
-      currentDays = ['Saturday'];
-      continue;
-    }
+    if (line.includes('Monday and Wednesday')) currentDays = ['Monday', 'Wednesday'];
+    else if (line.includes('Tuesday and Thursday')) currentDays = ['Tuesday', 'Thursday'];
+    else if (line.includes('Friday')) currentDays = ['Friday'];
+    else if (line.includes('Saturday')) currentDays = ['Saturday'];
 
-    // Check for table row format: | TIME | SUBJECT | UNITS | INSTRUCTOR | ROOM |
     if (line.startsWith('|') && !line.includes('DAY/TIME') && !line.includes('<td')) {
       const cols = line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
       
       if (cols.length >= 2) {
         const timeSpan = cols[0];
         const subject = cols[1];
-        const units = cols[2] || '';
-        const instructor = cols[3] || '';
+        const units = cols[2] || '3';
+        const instructor = cols[3] || 'Unassigned';
         const room = cols[4] || 'TBA';
 
-        // Ignore empty filler rows or activity breaks
-        if (!timeSpan || !subject || timeSpan.includes('NOON') || subject.includes('Research Work')) {
-          continue;
-        }
+        if (!timeSpan || !subject || timeSpan.includes('NOON') || subject.includes('Research Work')) continue;
 
-        // Parse time range
         const timeSplit = timeSpan.split('–').map(t => t.trim());
         let startTime = timeSplit[0] || '';
         let endTime = timeSplit[1] || '';
 
-        // Standardize time formatting
         if (startTime && !endTime && timeSplit.length === 1) {
           const parts = startTime.split('-');
           if (parts.length === 2) {
@@ -241,7 +201,8 @@ const parseScheduleText = (text) => {
 
         currentDays.forEach(day => {
           parsedEntries.push({
-            id: `sch-${idCounter++}`,
+            id: `sch-${idCounter++}-${Math.random().toString(36).substr(2, 5)}`,
+            college: currentCollege,
             program: currentProgram,
             day,
             timeSpan,
@@ -264,24 +225,87 @@ const parseScheduleText = (text) => {
   return parsedEntries;
 };
 
-// Generate attractive color code tag for subjects based on subject code prefix
 const getSubjectColor = (subject) => {
-  const code = subject.split(' ')[0].toUpperCase();
-  if (code.includes('CPE')) return 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800';
-  if (code.includes('ENGG')) return 'bg-green-100 text-green-900 border-green-400 dark:bg-green-950 dark:text-green-200 dark:border-green-800';
+  const code = (subject || '').split(' ')[0].toUpperCase();
+  if (code.includes('CPE') || code.includes('IT')) return 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800';
+  if (code.includes('ENGG') || code.includes('EDUC')) return 'bg-green-100 text-green-900 border-green-400 dark:bg-green-950 dark:text-green-200 dark:border-green-800';
   if (code.includes('SOCSCI') || code.includes('GE') || code.includes('HUM')) return 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800';
-  if (code.includes('ECE')) return 'bg-teal-100 text-teal-900 border-teal-400 dark:bg-teal-950 dark:text-teal-200 dark:border-teal-800';
-  if (code.includes('PATHFIT') || code.includes('NSTP')) return 'bg-lime-100 text-lime-900 border-lime-400 dark:bg-lime-950 dark:text-lime-200 dark:border-lime-800';
+  if (code.includes('AGRI') || code.includes('ECE')) return 'bg-teal-100 text-teal-900 border-teal-400 dark:bg-teal-950 dark:text-teal-200 dark:border-teal-800';
   return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700';
 };
 
 export default function App() {
   const [scheduleData, setScheduleData] = useState([]);
-  const [activeTab, setActiveTab] = useState('conflicts'); // 'conflicts', 'program', 'faculty', 'timetable', 'raw'
+  const [activeCollege, setActiveCollege] = useState('COE');
+  
+  // Navigation Tabs: 'dashboard', 'program_system', 'settings'
+  const [mainTab, setMainTab] = useState('dashboard');
+  
+  // System Settings Password Lock State
+  const [isSettingsUnlocked, setIsSettingsUnlocked] = useState(false);
+  const [settingsPasswordInput, setSettingsPasswordInput] = useState('');
+  const [settingsPasswordError, setSettingsPasswordError] = useState('');
+  
+  // Sub-tabs inside Class Program System: 'master', 'program', 'faculty', 'timetable', 'conflicts'
+  const [programSubTab, setProgramSubTab] = useState('master');
+  
   const [selectedProgram, setSelectedProgram] = useState('All');
   const [selectedFaculty, setSelectedFaculty] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadStatus, setUploadStatus] = useState(null);
+  
+  // Custom Logo Upload State
+  const [customLogoUrl, setCustomLogoUrl] = useState(null);
+
+  // System Settings State (Classrooms)
+  const [customClassrooms, setCustomClassrooms] = useState([
+    'Rm 101', 'Rm 102', 'Rm 201', 'Rm 301', 'Lab 1', 'Lab 2', 'Lab 3', 'CompLab 1', 'EdRm 1', 'AgriLab', 'Gym'
+  ]);
+  const [newRoomInput, setNewRoomInput] = useState('');
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [editRoomInputValue, setEditRoomInputValue] = useState('');
+
+  // Mapped Academic Programs & Sections Registry (Objects with section name & collegeId)
+  const [customSections, setCustomSections] = useState([
+    { id: 'sec-1', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING I - 1', collegeId: 'COE' },
+    { id: 'sec-2', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING II - 1', collegeId: 'COE' },
+    { id: 'sec-3', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING III - 1', collegeId: 'COE' },
+    { id: 'sec-4', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING III - 2', collegeId: 'COE' },
+    { id: 'sec-5', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING IV - 1', collegeId: 'COE' },
+    { id: 'sec-6', name: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING IV - 2', collegeId: 'COE' },
+    { id: 'sec-7', name: 'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY I - 1', collegeId: 'CCS' },
+    { id: 'sec-8', name: 'BACHELOR OF SECONDARY EDUCATION II - 1', collegeId: 'COEd' },
+    { id: 'sec-9', name: 'BACHELOR OF SCIENCE IN AGRICULTURE I - 1', collegeId: 'CANS' }
+  ]);
+  const [newSectionInput, setNewSectionInput] = useState('');
+  const [newSectionCollege, setNewSectionCollege] = useState('COE');
+  const [editingSection, setEditingSection] = useState(null);
+  const [editSectionInputValue, setEditSectionInputValue] = useState('');
+  const [editSectionCollegeValue, setEditSectionCollegeValue] = useState('COE');
+  const [settingsSectionFilter, setSettingsSectionFilter] = useState('All');
+
+  // Delete All Schedules Modal & Password State
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [deleteAllPassword, setDeleteAllPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // CRUD Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Form fields state for Create/Edit Modal
+  const [formData, setFormData] = useState({
+    college: 'COE',
+    program: 'BACHELOR OF SCIENCE IN COMPUTER ENGINEERING I - 1',
+    subject: '',
+    units: '3',
+    instructor: '',
+    room: 'Rm 101',
+    day: 'Monday',
+    startTime: '08:00',
+    endTime: '09:30'
+  });
 
   // Initial Data Load
   useEffect(() => {
@@ -289,19 +313,24 @@ export default function App() {
     setScheduleData(defaultParsed);
   }, []);
 
-  // Filter list of distinct Programs/Sections
+  // Filter schedules by active college
+  const collegeSchedules = useMemo(() => {
+    return scheduleData.filter(item => item.college === activeCollege);
+  }, [scheduleData, activeCollege]);
+
+  // List of distinct Programs for current college
   const programsList = useMemo(() => {
-    const set = new Set(scheduleData.map(item => item.program));
+    const set = new Set(collegeSchedules.map(item => item.program));
     return ['All', ...Array.from(set)];
-  }, [scheduleData]);
+  }, [collegeSchedules]);
 
-  // Filter list of distinct Faculty Members
+  // List of distinct Faculty Members for current college
   const facultyList = useMemo(() => {
-    const set = new Set(scheduleData.map(item => item.instructor).filter(Boolean));
+    const set = new Set(collegeSchedules.map(item => item.instructor).filter(Boolean));
     return ['All', ...Array.from(set).sort()];
-  }, [scheduleData]);
+  }, [collegeSchedules]);
 
-  // Automated Conflict Engine: Scans for overlapping time slots per Faculty & Room
+  // Automated Conflict Engine across ALL colleges
   const conflicts = useMemo(() => {
     const facultyConflicts = [];
     const roomConflicts = [];
@@ -311,13 +340,11 @@ export default function App() {
         const item1 = scheduleData[i];
         const item2 = scheduleData[j];
 
-        // Must occur on the same day to conflict
         if (item1.day === item2.day) {
-          // Check time overlap: (StartA < EndB) && (EndA > StartB)
           const isOverlapping = (item1.startMins < item2.endMins) && (item1.endMins > item2.startMins);
 
           if (isOverlapping) {
-            // 1. Faculty Conflict Check (Normalized names, ignore Unassigned)
+            // 1. Faculty Conflict Check
             if (
               item1.cleanInstructor && 
               item2.cleanInstructor && 
@@ -334,13 +361,14 @@ export default function App() {
                 course2: item2.subject,
                 program1: item1.program,
                 program2: item2.program,
+                college1: item1.college,
+                college2: item2.college,
                 room1: item1.room,
                 room2: item2.room,
-                severity: 'High'
               });
             }
 
-            // 2. Room Double Booking Check (Ignore empty or TBA rooms)
+            // 2. Room Double Booking Check
             if (
               item1.room && 
               item2.room && 
@@ -357,9 +385,10 @@ export default function App() {
                 course2: item2.subject,
                 program1: item1.program,
                 program2: item2.program,
+                college1: item1.college,
+                college2: item2.college,
                 instructor1: item1.instructor,
                 instructor2: item2.instructor,
-                severity: 'Medium'
               });
             }
           }
@@ -370,7 +399,137 @@ export default function App() {
     return { facultyConflicts, roomConflicts, total: facultyConflicts.length + roomConflicts.length };
   }, [scheduleData]);
 
-  // File Upload Handler (Text or pasted DOCX text content)
+  // Password-protected Delete All Schedules Handler
+  const handleDeleteAllSchedules = (e) => {
+    e.preventDefault();
+    if (deleteAllPassword === 'essusalcedo') {
+      setScheduleData([]);
+      setIsDeleteAllModalOpen(false);
+      setDeleteAllPassword('');
+      setPasswordError('');
+      setUploadStatus({ type: 'success', message: 'All schedule records have been securely cleared from the database!' });
+    } else {
+      setPasswordError('Invalid authorization password. Access denied.');
+    }
+  };
+
+  // Password Protection for System Settings Tab
+  const handleUnlockSettings = (e) => {
+    e.preventDefault();
+    if (settingsPasswordInput === 'essusalcedo') {
+      setIsSettingsUnlocked(true);
+      setSettingsPasswordInput('');
+      setSettingsPasswordError('');
+      setUploadStatus({ type: 'success', message: 'System Settings unlocked successfully.' });
+    } else {
+      setSettingsPasswordError('Incorrect password! Access denied.');
+    }
+  };
+
+  // Settings Handlers
+  const handleAddClassroom = (e) => {
+    e.preventDefault();
+    if (!newRoomInput.trim()) return;
+    if (!customClassrooms.includes(newRoomInput.trim())) {
+      setCustomClassrooms(prev => [...prev, newRoomInput.trim()]);
+      setNewRoomInput('');
+      setUploadStatus({ type: 'success', message: `Classroom "${newRoomInput.trim()}" added to system registry.` });
+    }
+  };
+
+  const handleStartEditRoom = (roomName) => {
+    setEditingRoom(roomName);
+    setEditRoomInputValue(roomName);
+  };
+
+  const handleSaveEditRoom = (oldRoomName) => {
+    const trimmed = editRoomInputValue.trim();
+    if (!trimmed || trimmed === oldRoomName) {
+      setEditingRoom(null);
+      return;
+    }
+
+    // Update rooms registry
+    setCustomClassrooms(prev => prev.map(r => r === oldRoomName ? trimmed : r));
+
+    // Update room name across all existing schedule slots
+    setScheduleData(prev => prev.map(item => item.room === oldRoomName ? { ...item, room: trimmed } : item));
+
+    setEditingRoom(null);
+    setUploadStatus({ type: 'success', message: `Renamed room "${oldRoomName}" to "${trimmed}" across all class schedules!` });
+  };
+
+  const handleDeleteClassroom = (roomName) => {
+    setCustomClassrooms(prev => prev.filter(r => r !== roomName));
+    setUploadStatus({ type: 'success', message: `Classroom "${roomName}" deleted.` });
+  };
+
+  const handleAddSection = (e) => {
+    e.preventDefault();
+    if (!newSectionInput.trim()) return;
+    const exists = customSections.some(s => s.name.toLowerCase() === newSectionInput.trim().toLowerCase());
+    if (!exists) {
+      const newSec = {
+        id: `sec-${Date.now()}`,
+        name: newSectionInput.trim(),
+        collegeId: newSectionCollege
+      };
+      setCustomSections(prev => [...prev, newSec]);
+      setNewSectionInput('');
+      setUploadStatus({ type: 'success', message: `Program/Section "${newSec.name}" registered under ${newSec.collegeId}.` });
+    }
+  };
+
+  const handleStartEditSection = (secObj) => {
+    setEditingSection(secObj.id);
+    setEditSectionInputValue(secObj.name);
+    setEditSectionCollegeValue(secObj.collegeId);
+  };
+
+  const handleSaveEditSection = (secObj) => {
+    const trimmed = editSectionInputValue.trim();
+    if (!trimmed) {
+      setEditingSection(null);
+      return;
+    }
+
+    const oldName = secObj.name;
+
+    // Update section registry
+    setCustomSections(prev => prev.map(s => s.id === secObj.id ? { ...s, name: trimmed, collegeId: editSectionCollegeValue } : s));
+
+    // Update section name and college across all existing schedule slots if renamed or remapped
+    setScheduleData(prev => prev.map(item => item.program === oldName ? { ...item, program: trimmed, college: editSectionCollegeValue } : item));
+
+    // Update filter selection if active
+    if (selectedProgram === oldName) {
+      setSelectedProgram(trimmed);
+    }
+
+    setEditingSection(null);
+    setUploadStatus({ type: 'success', message: `Updated section "${trimmed}" (${editSectionCollegeValue}) across system registry and schedule!` });
+  };
+
+  const handleDeleteSection = (secId) => {
+    const secToDelete = customSections.find(s => s.id === secId);
+    setCustomSections(prev => prev.filter(s => s.id !== secId));
+    setUploadStatus({ type: 'success', message: `Program/Section "${secToDelete ? secToDelete.name : ''}" deleted.` });
+  };
+
+  // Logo File Reader
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setCustomLogoUrl(uploadEvent.target.result);
+        setUploadStatus({ type: 'success', message: 'Logo successfully updated!' });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Schedule File Upload Handler
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -381,10 +540,10 @@ export default function App() {
         const text = event.target.result;
         const parsed = parseScheduleText(text);
         if (parsed.length > 0) {
-          setScheduleData(parsed);
-          setUploadStatus({ type: 'success', message: `Successfully loaded ${parsed.length} schedule slots!` });
+          setScheduleData(prev => [...prev, ...parsed]);
+          setUploadStatus({ type: 'success', message: `Imported ${parsed.length} new class schedules!` });
         } else {
-          setUploadStatus({ type: 'error', message: 'Could not detect standard schedule table rows in the file format.' });
+          setUploadStatus({ type: 'error', message: 'Could not parse text table format.' });
         }
       } catch (err) {
         setUploadStatus({ type: 'error', message: 'Error reading file: ' + err.message });
@@ -396,12 +555,89 @@ export default function App() {
   const loadDefaultData = () => {
     const parsed = parseScheduleText(DEFAULT_RAW_SCHEDULE_TEXT);
     setScheduleData(parsed);
-    setUploadStatus({ type: 'success', message: 'Loaded default ESSU Salcedo BSCpE SY 2025-2026 Schedule!' });
+    setUploadStatus({ type: 'success', message: 'Restored default ESSU Salcedo schedule dataset!' });
   };
 
-  // Filtered schedules based on active user query
+  // CRUD Operations
+  const openAddModal = () => {
+    setEditingItem(null);
+    const availableSections = customSections.filter(s => s.collegeId === activeCollege);
+    const defaultSecName = availableSections.length > 0 ? availableSections[0].name : (customSections[0]?.name || 'BSCpE I - 1');
+
+    setFormData({
+      college: activeCollege,
+      program: selectedProgram !== 'All' ? selectedProgram : defaultSecName,
+      subject: '',
+      units: '3',
+      instructor: '',
+      room: customClassrooms[0] || 'Rm 101',
+      day: 'Monday',
+      startTime: '08:00',
+      endTime: '09:30'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingItem(item);
+    setFormData({
+      college: item.college,
+      program: item.program,
+      subject: item.subject,
+      units: item.units,
+      instructor: item.instructor,
+      room: item.room,
+      day: item.day,
+      startTime: item.startTime || '08:00',
+      endTime: item.endTime || '09:30'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveSchedule = (e) => {
+    e.preventDefault();
+    const startMins = parseTimeToMinutes(formData.startTime);
+    const endMins = parseTimeToMinutes(formData.endTime);
+    const timeSpan = `${formData.startTime} – ${formData.endTime}`;
+
+    const newEntry = {
+      id: editingItem ? editingItem.id : `sch-${Date.now()}`,
+      college: formData.college,
+      program: formData.program,
+      day: formData.day,
+      timeSpan,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      startMins,
+      endMins,
+      subject: formData.subject,
+      units: formData.units,
+      instructor: formData.instructor || 'Unassigned',
+      cleanInstructor: cleanInstructorName(formData.instructor),
+      room: formData.room || 'TBA',
+      color: getSubjectColor(formData.subject)
+    };
+
+    if (editingItem) {
+      setScheduleData(prev => prev.map(item => item.id === editingItem.id ? newEntry : item));
+      setUploadStatus({ type: 'success', message: 'Schedule item updated successfully!' });
+    } else {
+      setScheduleData(prev => [newEntry, ...prev]);
+      setUploadStatus({ type: 'success', message: 'New schedule entry added successfully!' });
+    }
+
+    setIsEditModalOpen(false);
+  };
+
+  const handleDeleteSchedule = (id) => {
+    setScheduleData(prev => prev.filter(item => item.id !== id));
+    setDeleteConfirmId(null);
+    setUploadStatus({ type: 'success', message: 'Schedule entry deleted.' });
+  };
+
+  // Filtered schedules for current display
   const filteredSchedule = useMemo(() => {
-    return scheduleData.filter(item => {
+    return collegeSchedules.filter(item => {
       const matchProgram = selectedProgram === 'All' || item.program === selectedProgram;
       const matchFaculty = selectedFaculty === 'All' || item.instructor === selectedFaculty;
       const matchSearch = searchQuery === '' || 
@@ -411,7 +647,7 @@ export default function App() {
       
       return matchProgram && matchFaculty && matchSearch;
     });
-  }, [scheduleData, selectedProgram, selectedFaculty, searchQuery]);
+  }, [collegeSchedules, selectedProgram, selectedFaculty, searchQuery]);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -422,599 +658,1275 @@ export default function App() {
       <header className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 text-white border-b-4 border-yellow-400 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
           
-          {/* Institution Crest Branding */}
+          {/* Institution Crest Branding with Custom Logo Uploader */}
           <div className="flex items-center space-x-4">
-            <div className="p-1 bg-white rounded-full shadow-lg border-2 border-yellow-400 flex-shrink-0">
-              <ESSULogo className="w-14 h-14" />
+            <div className="relative group cursor-pointer" title="Click to Upload Logo">
+              <label className="cursor-pointer">
+                <div className="p-1 bg-white rounded-full shadow-lg border-2 border-yellow-400 flex-shrink-0 overflow-hidden w-16 h-16 flex items-center justify-center">
+                  {customLogoUrl ? (
+                    <img src={customLogoUrl} alt="ESSU Seal" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <ESSULogo className="w-14 h-14" />
+                  )}
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  <ImageIcon className="w-5 h-5 text-yellow-400" />
+                </div>
+              </label>
             </div>
+
             <div>
               <h1 className="text-xl sm:text-2xl font-black tracking-wide text-yellow-400 drop-shadow-sm">
                 EASTERN SAMAR STATE UNIVERSITY
               </h1>
               <p className="text-xs sm:text-sm text-emerald-100 font-medium tracking-wider">
-                SALCEDO CAMPUS • COLLEGE OF ENGINEERING (COE)
+                SALCEDO CAMPUS • CLASS PROGRAM SYSTEM
               </p>
               <div className="flex items-center space-x-2 text-xs text-yellow-200 mt-1">
-                <span className="font-bold">Class Schedule & Conflict Detection System</span>
+                <span className="font-bold">Multi-College Schedule & Conflict Detection Engine</span>
                 <span>•</span>
-                <span>2nd Semester, SY 2025–2026</span>
+                <span>2nd Sem, SY 2025–2026</span>
               </div>
             </div>
           </div>
 
-          {/* Action Header Buttons */}
+          {/* Action Toolbar Buttons */}
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={openAddModal}
+              className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-xs sm:text-sm font-black px-4 py-2.5 rounded-lg flex items-center space-x-2 transition shadow">
+              <Plus className="w-4 h-4" />
+              <span>Add Schedule</span>
+            </button>
+
             <label className="cursor-pointer bg-emerald-800 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg flex items-center space-x-2 transition shadow border border-emerald-600">
               <Upload className="w-4 h-4 text-yellow-400" />
-              <span>Upload Schedule (.txt/.docx)</span>
+              <span>Import (.txt)</span>
               <input type="file" accept=".txt,.doc,.docx" className="hidden" onChange={handleFileUpload} />
             </label>
 
+            <button
+              onClick={() => setIsDeleteAllModalOpen(true)}
+              className="bg-red-800 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg flex items-center space-x-1 transition shadow border border-red-600"
+              title="Delete All Schedules (Password Required)">
+              <Trash2 className="w-4 h-4 text-yellow-300" />
+              <span className="hidden sm:inline">Clear All</span>
+            </button>
+
             <button 
               onClick={loadDefaultData}
-              className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-xs sm:text-sm font-extrabold px-4 py-2.5 rounded-lg flex items-center space-x-2 transition shadow">
-              <RefreshCw className="w-4 h-4" />
-              <span>Reset ESSU Data</span>
+              className="bg-emerald-900 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg flex items-center space-x-1 transition shadow border border-emerald-700"
+              title="Reset to Default Dataset">
+              <RefreshCw className="w-4 h-4 text-yellow-400" />
             </button>
 
             <button 
               onClick={() => window.print()}
               className="bg-emerald-900 hover:bg-emerald-850 text-white text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg flex items-center space-x-1 transition shadow border border-emerald-700">
               <Printer className="w-4 h-4 text-yellow-400" />
-              <span className="hidden sm:inline">Print Report</span>
+              <span className="hidden sm:inline">Print</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* SYSTEM STATS BAR */}
-      <div className="bg-white dark:bg-slate-800 border-b border-emerald-100 dark:border-slate-700 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+      {/* PRIMARY THREE TOP-LEVEL TABS (Dashboard, Class Program System, System Settings) */}
+      <div className="bg-emerald-950 border-b-2 border-yellow-400 px-4">
+        <div className="max-w-7xl mx-auto flex space-x-3 pt-3">
           
-          <div className="flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4 text-emerald-700" />
-              <span className="text-slate-500 dark:text-slate-400">Total Classes:</span>
-              <span className="font-bold text-slate-800 dark:text-white">{scheduleData.length}</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-emerald-700" />
-              <span className="text-slate-500 dark:text-slate-400">Faculty Members:</span>
-              <span className="font-bold text-slate-800 dark:text-white">{facultyList.length - 1}</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Layers className="w-4 h-4 text-emerald-700" />
-              <span className="text-slate-500 dark:text-slate-400">Sections:</span>
-              <span className="font-bold text-slate-800 dark:text-white">{programsList.length - 1}</span>
-            </div>
-          </div>
-
-          {/* Conflict Status Badge */}
-          <div className="flex items-center space-x-2">
-            {conflicts.total > 0 ? (
-              <div className="bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1.5 animate-pulse">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-                <span>{conflicts.total} Schedule Conflicts Detected!</span>
-              </div>
-            ) : (
-              <div className="bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                <span>Zero Schedule Conflicts Found</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* NOTIFICATION BANNER */}
-      {uploadStatus && (
-        <div className={`px-4 py-2.5 text-xs sm:text-sm text-center flex items-center justify-center space-x-2 ${
-          uploadStatus.type === 'success' 
-            ? 'bg-emerald-700 text-white' 
-            : 'bg-red-600 text-white'
-        }`}>
-          {uploadStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-          <span>{uploadStatus.message}</span>
-          <button onClick={() => setUploadStatus(null)} className="ml-4 underline text-xs font-bold">Dismiss</button>
-        </div>
-      )}
-
-      {/* NAVIGATION MAIN TABS */}
-      <div className="bg-emerald-900/10 dark:bg-slate-800 border-b border-emerald-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 pt-2">
-          
+          {/* TAB 1: DASHBOARD */}
           <button
-            onClick={() => setActiveTab('conflicts')}
-            className={`flex items-center space-x-2 py-3 px-4 font-bold text-sm border-b-2 transition whitespace-nowrap ${
-              activeTab === 'conflicts'
-                ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            onClick={() => setMainTab('dashboard')}
+            className={`px-6 py-3 rounded-t-xl font-black text-xs sm:text-sm transition flex items-center space-x-2 border-t-2 border-x ${
+              mainTab === 'dashboard'
+                ? 'bg-yellow-400 text-emerald-950 border-yellow-400 shadow-lg scale-105 z-10'
+                : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-800 hover:text-white border-emerald-800'
             }`}>
-            <ShieldAlert className={`w-4 h-4 ${conflicts.total > 0 ? 'text-red-600' : 'text-slate-400'}`} />
-            <span>Conflict Tracker</span>
+            <LayoutDashboard className="w-4 h-4" />
+            <span>1. Dashboard</span>
+          </button>
+
+          {/* TAB 2: CLASS PROGRAM SYSTEM */}
+          <button
+            onClick={() => setMainTab('program_system')}
+            className={`px-6 py-3 rounded-t-xl font-black text-xs sm:text-sm transition flex items-center space-x-2 border-t-2 border-x ${
+              mainTab === 'program_system'
+                ? 'bg-yellow-400 text-emerald-950 border-yellow-400 shadow-lg scale-105 z-10'
+                : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-800 hover:text-white border-emerald-800'
+            }`}>
+            <School className="w-4 h-4" />
+            <span>2. Class Program System</span>
             {conflicts.total > 0 && (
-              <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold animate-pulse">
                 {conflicts.total}
               </span>
             )}
           </button>
 
+          {/* TAB 3: SYSTEM SETTINGS */}
           <button
-            onClick={() => setActiveTab('program')}
-            className={`flex items-center space-x-2 py-3 px-4 font-bold text-sm border-b-2 transition whitespace-nowrap ${
-              activeTab === 'program'
-                ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            onClick={() => setMainTab('settings')}
+            className={`px-6 py-3 rounded-t-xl font-black text-xs sm:text-sm transition flex items-center space-x-2 border-t-2 border-x ${
+              mainTab === 'settings'
+                ? 'bg-yellow-400 text-emerald-950 border-yellow-400 shadow-lg scale-105 z-10'
+                : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-800 hover:text-white border-emerald-800'
             }`}>
-            <Layers className="w-4 h-4 text-emerald-700" />
-            <span>Program & Section View</span>
+            <Settings className="w-4 h-4" />
+            <span>3. System Settings</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('faculty')}
-            className={`flex items-center space-x-2 py-3 px-4 font-bold text-sm border-b-2 transition whitespace-nowrap ${
-              activeTab === 'faculty'
-                ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}>
-            <User className="w-4 h-4 text-emerald-700" />
-            <span>Faculty Workload View</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('timetable')}
-            className={`flex items-center space-x-2 py-3 px-4 font-bold text-sm border-b-2 transition whitespace-nowrap ${
-              activeTab === 'timetable'
-                ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}>
-            <Calendar className="w-4 h-4 text-emerald-700" />
-            <span>Weekly Timetable Matrix</span>
-          </button>
         </div>
       </div>
 
-      {/* FILTER & SEARCH CONTROL STRIP */}
-      <div className="bg-white dark:bg-slate-800 border-b border-emerald-100 dark:border-slate-700 py-4 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          
-          {/* Program Filter */}
-          <div>
-            <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
-              Select Program / Section:
-            </label>
-            <select
-              value={selectedProgram}
-              onChange={(e) => setSelectedProgram(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600 font-medium">
-              {programsList.map(prog => (
-                <option key={prog} value={prog}>{prog}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Instructor Filter */}
-          <div>
-            <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
-              Filter By Instructor:
-            </label>
-            <select
-              value={selectedFaculty}
-              onChange={(e) => setSelectedFaculty(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600 font-medium">
-              {facultyList.map(fac => (
-                <option key={fac} value={fac}>{fac}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Search Query */}
-          <div>
-            <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
-              Search Course / Code / Room:
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search CPE 121, Acebo, Lab 1..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600"
-              />
-            </div>
-          </div>
+      {/* NOTIFICATION BANNER */}
+      {uploadStatus && (
+        <div className={`px-4 py-2 text-xs sm:text-sm text-center flex items-center justify-center space-x-2 ${
+          uploadStatus.type === 'success' ? 'bg-emerald-700 text-white' : 'bg-red-600 text-white'
+        }`}>
+          {uploadStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+          <span>{uploadStatus.message}</span>
+          <button onClick={() => setUploadStatus(null)} className="ml-4 underline font-bold">Dismiss</button>
         </div>
-      </div>
+      )}
 
-      {/* MAIN CONTENT WORKSPACE */}
+      {/* MAIN VIEW SYSTEM CONTAINER */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
-        {/* ==================== 1. CONFLICT TRACKER VIEW ==================== */}
-        {activeTab === 'conflicts' && (
+
+        {/* ==================== TAB 1: MAIN DASHBOARD ==================== */}
+        {mainTab === 'dashboard' && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-emerald-100 dark:border-slate-700 shadow-sm">
-              <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-700 pb-4 mb-4">
-                <ShieldAlert className="w-6 h-6 text-red-600" />
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Automated Faculty & Schedule Overlap Detector
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Real-time schedule validation for double-booked faculty instructors and classroom assignments.
-                  </p>
+            
+            {/* ESSU Salcedo Hero Banner */}
+            <div className="bg-gradient-to-r from-emerald-900 via-green-900 to-emerald-950 rounded-2xl p-6 sm:p-8 text-white border-2 border-yellow-400 shadow-lg relative overflow-hidden">
+              <div className="relative z-10 space-y-3">
+                <div className="inline-flex items-center space-x-2 bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 px-3 py-1 rounded-full text-xs font-bold">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Official Class Schedule Management System</span>
                 </div>
-              </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-yellow-400">
+                  Welcome to ESSU Salcedo Schedule Portal
+                </h2>
+                <p className="text-emerald-100 max-w-2xl text-sm leading-relaxed">
+                  Easily manage, plot, and verify general class schedules across all campus colleges (COE, COEd, CCS, CANS). The system automatically audits faculty double-bookings and room assignment conflicts in real-time.
+                </p>
 
-              {/* Faculty Conflicts Section */}
-              <div className="mb-8">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-slate-300 mb-3 flex items-center space-x-2">
-                  <User className="w-4 h-4 text-red-600" />
-                  <span>Faculty Schedule Conflicts ({conflicts.facultyConflicts.length})</span>
-                </h3>
-
-                {conflicts.facultyConflicts.length === 0 ? (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-900 dark:text-emerald-300 text-sm flex items-center space-x-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-700" />
-                    <span>No faculty teaching double-bookings found across current schedules!</span>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    {conflicts.facultyConflicts.map((c, idx) => (
-                      <div key={idx} className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-600 p-4 rounded-r-lg shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-black text-red-700 dark:text-red-400 text-base">
-                              {c.instructor}
-                            </span>
-                            <span className="bg-red-200 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs font-bold px-2 py-0.5 rounded">
-                              {c.day}
-                            </span>
-                          </div>
-                          <span className="text-xs font-bold text-red-600 uppercase tracking-wider">High Overlap Risk</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm bg-white dark:bg-slate-800 p-3 rounded border border-red-200 dark:border-red-900">
-                          {/* Course 1 */}
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-500 font-bold uppercase">Assigned Class #1</div>
-                            <div className="font-semibold text-slate-800 dark:text-white">{c.course1}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              <span className="font-bold text-emerald-700">{c.program1}</span> • {c.time1} • Room: {c.room1}
-                            </div>
-                          </div>
-
-                          {/* Course 2 */}
-                          <div className="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-2 md:pt-0 md:pl-3">
-                            <div className="text-xs text-slate-500 font-bold uppercase">Conflicting Class #2</div>
-                            <div className="font-semibold text-slate-800 dark:text-white">{c.course2}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              <span className="font-bold text-emerald-700">{c.program2}</span> • {c.time2} • Room: {c.room2}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Room Conflicts Section */}
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-slate-300 mb-3 flex items-center space-x-2">
-                  <Building className="w-4 h-4 text-amber-500" />
-                  <span>Classroom Double-Booking Conflicts ({conflicts.roomConflicts.length})</span>
-                </h3>
-
-                {conflicts.roomConflicts.length === 0 ? (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-900 dark:text-emerald-300 text-sm flex items-center space-x-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-700" />
-                    <span>No classroom assignment conflicts detected!</span>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    {conflicts.roomConflicts.map((c, idx) => (
-                      <div key={idx} className="bg-amber-50 dark:bg-amber-950/30 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-black text-amber-800 dark:text-amber-300 text-base">
-                              Room: {c.room}
-                            </span>
-                            <span className="bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 text-xs font-bold px-2 py-0.5 rounded">
-                              {c.day}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm bg-white dark:bg-slate-800 p-3 rounded border border-amber-200 dark:border-amber-900">
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-500 font-bold uppercase">Class #1</div>
-                            <div className="font-semibold text-slate-800 dark:text-white">{c.course1}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              {c.program1} ({c.instructor1}) • {c.time1}
-                            </div>
-                          </div>
-
-                          <div className="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-2 md:pt-0 md:pl-3">
-                            <div className="text-xs text-slate-500 font-bold uppercase">Class #2</div>
-                            <div className="font-semibold text-slate-800 dark:text-white">{c.course2}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              {c.program2} ({c.instructor2}) • {c.time2}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="pt-2 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setMainTab('program_system')}
+                    className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black px-5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-2 shadow transition">
+                    <Calendar className="w-4 h-4" />
+                    <span>Open Class Program System</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => setMainTab('settings')}
+                    className="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-2 border border-emerald-600 shadow transition">
+                    <Settings className="w-4 h-4 text-yellow-400" />
+                    <span>Manage Rooms & Sections</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* ==================== 2. PROGRAM / SECTION VIEW ==================== */}
-        {activeTab === 'program' && (
-          <div className="space-y-6">
-            {programsList.filter(p => p !== 'All' && (selectedProgram === 'All' || p === selectedProgram)).map((programName) => {
-              const programItems = filteredSchedule.filter(item => item.program === programName);
-              if (programItems.length === 0) return null;
-
-              return (
-                <div key={programName} className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                  
-                  {/* Program Section Header with Green Header */}
-                  <div className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 px-6 py-4 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b-2 border-yellow-400">
-                    <div className="flex items-center space-x-3">
-                      <ESSULogo className="w-10 h-10" />
-                      <div>
-                        <h3 className="text-lg font-black tracking-wide text-yellow-400">
-                          {programName}
-                        </h3>
-                        <p className="text-xs text-emerald-100">
-                          College of Engineering • ESSU Salcedo Campus
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-emerald-900 px-3 py-1 rounded text-xs font-bold text-yellow-300 border border-emerald-700">
-                      Total Subjects: {programItems.length}
-                    </div>
-                  </div>
-
-                  {/* Schedule Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="bg-emerald-50 dark:bg-slate-900 text-emerald-950 dark:text-slate-300 text-xs font-bold uppercase border-b border-emerald-200 dark:border-slate-700">
-                          <th className="py-3 px-4">Day & Time</th>
-                          <th className="py-3 px-4">Subject Code & Description</th>
-                          <th className="py-3 px-4 text-center">Units</th>
-                          <th className="py-3 px-4">Instructor / Professor</th>
-                          <th className="py-3 px-4">Room</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {programItems.map((item) => {
-                          const hasConflict = conflicts.facultyConflicts.some(
-                            c => (c.course1 === item.subject || c.course2 === item.subject) && c.day === item.day
-                          );
-
-                          return (
-                            <tr key={item.id} className={`hover:bg-emerald-50/50 dark:hover:bg-slate-750 transition ${hasConflict ? 'bg-red-50/50 dark:bg-red-950/20' : ''}`}>
-                              <td className="py-3 px-4 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                                <div className="text-xs text-emerald-800 dark:text-emerald-400 font-extrabold uppercase">{item.day}</div>
-                                <div className="text-slate-900 dark:text-white">{item.timeSpan}</div>
-                              </td>
-                              <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-100">
-                                <span className={`inline-block px-2.5 py-1 rounded border text-xs font-bold mr-2 ${item.color}`}>
-                                  {item.subject}
-                                </span>
-                                {hasConflict && (
-                                  <span className="inline-flex items-center text-xs font-bold text-red-600 ml-2">
-                                    <AlertTriangle className="w-3.5 h-3.5 mr-1" /> Conflict
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                                {item.units || '-'}
-                              </td>
-                              <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">
-                                {item.instructor}
-                              </td>
-                              <td className="py-3 px-4">
-                                <span className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-xs font-bold">
-                                  {item.room}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Official Signatures Footer */}
-                  <div className="bg-emerald-50/40 dark:bg-slate-900/60 p-4 border-t border-emerald-100 dark:border-slate-700 text-xs grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-600 dark:text-slate-400">
-                    <div>
-                      <span className="font-bold block text-emerald-950 dark:text-slate-200">Prepared by:</span>
-                      ARVIN ANTHONY S. ARANETA, DMT, PCpE
-                      <div className="text-[10px] text-slate-500">Program Head, BSCpE</div>
-                    </div>
-                    <div>
-                      <span className="font-bold block text-emerald-950 dark:text-slate-200">Recommending Approval:</span>
-                      ARVIN ANTHONY S. ARANETA, DMT, PCpE
-                      <div className="text-[10px] text-slate-500">Dean, COE</div>
-                    </div>
-                    <div>
-                      <span className="font-bold block text-emerald-950 dark:text-slate-200">Approved:</span>
-                      EDUARDO A. CABLAO, JR., PhD
-                      <div className="text-[10px] text-slate-500">Campus Administrator</div>
-                    </div>
-                  </div>
-
+            {/* Quick Metrics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold uppercase text-slate-500">Total Classes</div>
+                  <div className="text-2xl font-black text-emerald-900 dark:text-yellow-400">{scheduleData.length}</div>
+                  <div className="text-[11px] text-emerald-700 mt-1 font-semibold">Across 4 Colleges</div>
                 </div>
-              );
-            })}
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-800">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold uppercase text-slate-500">Active Faculty</div>
+                  <div className="text-2xl font-black text-emerald-900 dark:text-yellow-400">
+                    {new Set(scheduleData.map(i => i.cleanInstructor).filter(Boolean)).size}
+                  </div>
+                  <div className="text-[11px] text-emerald-700 mt-1 font-semibold">Instructors Tracked</div>
+                </div>
+                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-amber-800">
+                  <Users className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold uppercase text-slate-500">Classroom Spaces</div>
+                  <div className="text-2xl font-black text-emerald-900 dark:text-yellow-400">{customClassrooms.length}</div>
+                  <div className="text-[11px] text-emerald-700 mt-1 font-semibold">Configured Rooms</div>
+                </div>
+                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-teal-800">
+                  <Building className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className={`p-5 rounded-xl border shadow-sm flex items-center justify-between ${
+                conflicts.total > 0 ? 'bg-red-50 border-red-300 dark:bg-red-950/40 dark:border-red-800' : 'bg-emerald-50 border-emerald-300'
+              }`}>
+                <div>
+                  <div className="text-xs font-bold uppercase text-slate-500">Conflict Status</div>
+                  <div className={`text-2xl font-black ${conflicts.total > 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                    {conflicts.total > 0 ? `${conflicts.total} Overlaps` : '0 Conflicts'}
+                  </div>
+                  <div className="text-[11px] mt-1 font-semibold text-slate-600">Real-Time Validation</div>
+                </div>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${conflicts.total > 0 ? 'bg-red-100 text-red-600 animate-bounce' : 'bg-emerald-200 text-emerald-800'}`}>
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+              </div>
+
+            </div>
+
+            {/* Colleges Breakdown Cards */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+              <h3 className="text-base font-black text-emerald-950 dark:text-yellow-400 uppercase tracking-wide flex items-center space-x-2">
+                <School className="w-5 h-5 text-emerald-700" />
+                <span>Colleges Overview & Class Schedules Summary</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {COLLEGES.map(col => {
+                  const count = scheduleData.filter(i => i.college === col.id).length;
+                  return (
+                    <div 
+                      key={col.id} 
+                      onClick={() => {
+                        setActiveCollege(col.id);
+                        setMainTab('program_system');
+                      }}
+                      className="cursor-pointer bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-yellow-400 p-4 rounded-xl transition group">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-extrabold text-xs text-emerald-800 dark:text-emerald-400 uppercase">{col.code}</span>
+                        <span className="bg-emerald-950 text-yellow-400 text-xs px-2 py-0.5 rounded-full font-bold">{count} Classes</span>
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-800 dark:text-white group-hover:text-emerald-700 transition">{col.name}</h4>
+                      <div className="mt-3 text-xs text-emerald-700 dark:text-yellow-400 font-bold flex items-center space-x-1">
+                        <span>View Schedule</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
         )}
 
-        {/* ==================== 3. FACULTY WORKLOAD VIEW ==================== */}
-        {activeTab === 'faculty' && (
+        {/* ==================== TAB 2: CLASS PROGRAM SYSTEM ==================== */}
+        {mainTab === 'program_system' && (
           <div className="space-y-6">
-            {facultyList.filter(f => f !== 'All' && (selectedFaculty === 'All' || f === selectedFaculty)).map((facultyName) => {
-              const facultyItems = filteredSchedule.filter(item => item.instructor === facultyName);
-              if (facultyItems.length === 0) return null;
+            
+            {/* COLLEGE SELECTOR STRIP */}
+            <div className="bg-emerald-950 border-b border-emerald-800 px-4 py-2 rounded-xl">
+              <div className="flex overflow-x-auto space-x-2">
+                {COLLEGES.map((col) => (
+                  <button
+                    key={col.id}
+                    onClick={() => {
+                      setActiveCollege(col.id);
+                      setSelectedProgram('All');
+                      setSelectedFaculty('All');
+                    }}
+                    className={`px-5 py-2.5 rounded-lg font-black text-xs sm:text-sm transition flex items-center space-x-2 whitespace-nowrap ${
+                      activeCollege === col.id
+                        ? 'bg-yellow-400 text-emerald-950 shadow-md scale-105'
+                        : 'bg-emerald-900/60 text-emerald-100 hover:bg-emerald-800 hover:text-white'
+                    }`}>
+                    <GraduationCap className="w-4 h-4" />
+                    <span>{col.code} - {col.name}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeCollege === col.id ? 'bg-emerald-950 text-white' : 'bg-emerald-950/60 text-yellow-300'}`}>
+                      {scheduleData.filter(i => i.college === col.id).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              const totalUnits = facultyItems.reduce((acc, curr) => acc + (parseInt(curr.units, 10) || 0), 0);
-              const facultyConflictsList = conflicts.facultyConflicts.filter(c => c.instructor === facultyName);
+            {/* CLASS PROGRAM SUB-TABS */}
+            <div className="bg-emerald-900/10 dark:bg-slate-800 border-b border-emerald-200 dark:border-slate-700 rounded-t-xl overflow-x-auto flex space-x-2 px-2 pt-2">
+              
+              <button
+                onClick={() => setProgramSubTab('master')}
+                className={`flex items-center space-x-2 py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 transition whitespace-nowrap ${
+                  programSubTab === 'master'
+                    ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}>
+                <FileText className="w-4 h-4 text-emerald-700" />
+                <span>Master Schedule List</span>
+              </button>
 
-              return (
-                <div key={facultyName} className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                  
-                  {/* Faculty Header Bar */}
-                  <div className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 text-white p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b-2 border-yellow-400">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-yellow-400 text-emerald-950 flex items-center justify-center font-black text-lg border border-white">
-                        {facultyName.charAt(0)}
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold text-white">{facultyName}</h3>
-                        <p className="text-xs text-emerald-100">ESSU Salcedo Faculty Member</p>
-                      </div>
-                    </div>
+              <button
+                onClick={() => setProgramSubTab('program')}
+                className={`flex items-center space-x-2 py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 transition whitespace-nowrap ${
+                  programSubTab === 'program'
+                    ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}>
+                <Layers className="w-4 h-4 text-emerald-700" />
+                <span>Program & Section View</span>
+              </button>
 
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-xs text-emerald-200 font-bold uppercase">Assigned Workload</div>
-                        <div className="text-base font-extrabold text-yellow-400">{totalUnits} Academic Units</div>
-                      </div>
+              <button
+                onClick={() => setProgramSubTab('faculty')}
+                className={`flex items-center space-x-2 py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 transition whitespace-nowrap ${
+                  programSubTab === 'faculty'
+                    ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}>
+                <User className="w-4 h-4 text-emerald-700" />
+                <span>Faculty Workload View</span>
+              </button>
 
-                      {facultyConflictsList.length > 0 && (
-                        <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center space-x-1 animate-pulse">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>{facultyConflictsList.length} Conflict</span>
-                        </span>
-                      )}
-                    </div>
+              <button
+                onClick={() => setProgramSubTab('timetable')}
+                className={`flex items-center space-x-2 py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 transition whitespace-nowrap ${
+                  programSubTab === 'timetable'
+                    ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}>
+                <Calendar className="w-4 h-4 text-emerald-700" />
+                <span>Weekly Timetable Matrix</span>
+              </button>
+
+              <button
+                onClick={() => setProgramSubTab('conflicts')}
+                className={`flex items-center space-x-2 py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 transition whitespace-nowrap ${
+                  programSubTab === 'conflicts'
+                    ? 'border-yellow-500 text-emerald-900 dark:text-yellow-400 bg-white dark:bg-slate-900 rounded-t-lg shadow-sm'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}>
+                <ShieldAlert className={`w-4 h-4 ${conflicts.total > 0 ? 'text-red-600' : 'text-slate-400'}`} />
+                <span>Conflict Tracker</span>
+                {conflicts.total > 0 && (
+                  <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                    {conflicts.total}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* FILTER & SEARCH STRIP */}
+            <div className="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <div>
+                  <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
+                    Program / Section ({activeCollege}):
+                  </label>
+                  <select
+                    value={selectedProgram}
+                    onChange={(e) => setSelectedProgram(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600 font-medium">
+                    {programsList.map(prog => (
+                      <option key={prog} value={prog}>{prog}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
+                    Instructor / Professor:
+                  </label>
+                  <select
+                    value={selectedFaculty}
+                    onChange={(e) => setSelectedFaculty(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600 font-medium">
+                    {facultyList.map(fac => (
+                      <option key={fac} value={fac}>{fac}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-emerald-900 dark:text-slate-300 mb-1">
+                    Search Course / Room:
+                  </label>
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search CPE, Acebo, Lab 1..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SUB-TAB CONTENTS */}
+            {programSubTab === 'master' && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 p-5 text-white flex flex-col md:flex-row justify-between items-center gap-3 border-b-2 border-yellow-400">
+                  <div>
+                    <h2 className="text-lg font-black text-yellow-400">
+                      General Class Schedule Master List — {activeCollege}
+                    </h2>
+                    <p className="text-xs text-emerald-100">
+                      Eastern Samar State University Salcedo Campus • Editable Database
+                    </p>
                   </div>
 
-                  {/* Faculty Schedule Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="bg-emerald-50 dark:bg-slate-900 text-emerald-950 dark:text-slate-400 text-xs font-bold uppercase border-b border-emerald-200 dark:border-slate-700">
-                          <th className="py-3 px-4">Day</th>
-                          <th className="py-3 px-4">Time Slot</th>
-                          <th className="py-3 px-4">Program / Section</th>
-                          <th className="py-3 px-4">Subject Description</th>
-                          <th className="py-3 px-4 text-center">Units</th>
-                          <th className="py-3 px-4">Room</th>
+                  <button
+                    onClick={openAddModal}
+                    className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-xs font-black px-3.5 py-2 rounded-lg flex items-center space-x-1 shadow">
+                    <Plus className="w-4 h-4" />
+                    <span>New Class Slot</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr className="bg-emerald-50 dark:bg-slate-900 text-emerald-950 dark:text-slate-300 text-xs font-bold uppercase border-b border-emerald-200 dark:border-slate-700">
+                        <th className="py-3.5 px-4">Program / Section</th>
+                        <th className="py-3.5 px-4">Day & Time</th>
+                        <th className="py-3.5 px-4">Subject Code & Description</th>
+                        <th className="py-3.5 px-4 text-center">Units</th>
+                        <th className="py-3.5 px-4">Instructor</th>
+                        <th className="py-3.5 px-4">Room</th>
+                        <th className="py-3.5 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                      {filteredSchedule.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="py-12 text-center text-slate-400 italic">
+                            No schedules found matching selected college and filters.
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {facultyItems.map((item) => (
-                          <tr key={item.id} className="hover:bg-emerald-50/40 dark:hover:bg-slate-750">
-                            <td className="py-3 px-4 font-bold text-emerald-800 dark:text-emerald-400">
-                              {item.day}
-                            </td>
-                            <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                              {item.timeSpan}
-                            </td>
-                            <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                      ) : (
+                        filteredSchedule.map((item) => (
+                          <tr key={item.id} className="hover:bg-emerald-50/50 dark:hover:bg-slate-750 transition">
+                            <td className="py-3 px-4 font-bold text-emerald-950 dark:text-emerald-300 text-xs">
                               {item.program}
                             </td>
+                            <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                              <span className="text-xs font-extrabold text-emerald-700 uppercase block">{item.day}</span>
+                              {item.timeSpan}
+                            </td>
                             <td className="py-3 px-4">
-                              <span className={`inline-block px-2.5 py-1 rounded border text-xs font-semibold ${item.color}`}>
+                              <span className={`inline-block px-2.5 py-1 rounded border text-xs font-bold ${item.color}`}>
                                 {item.subject}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-center font-bold text-slate-600">
-                              {item.units || '-'}
+                              {item.units}
                             </td>
                             <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">
-                              {item.room}
+                              {item.instructor}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border text-xs font-bold">
+                                {item.room}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                              <button
+                                onClick={() => openEditModal(item)}
+                                className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg transition"
+                                title="Edit Schedule">
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmId(item.id)}
+                                className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition"
+                                title="Delete Schedule">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </td>
                           </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {programSubTab === 'program' && (
+              <div className="space-y-6">
+                {programsList.filter(p => p !== 'All' && (selectedProgram === 'All' || p === selectedProgram)).map((programName) => {
+                  const programItems = filteredSchedule.filter(item => item.program === programName);
+                  if (programItems.length === 0) return null;
+
+                  return (
+                    <div key={programName} className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                      <div className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 px-6 py-4 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b-2 border-yellow-400">
+                        <div className="flex items-center space-x-3">
+                          {customLogoUrl ? (
+                            <img src={customLogoUrl} alt="Logo" className="w-10 h-10 rounded-full object-cover border border-yellow-400" />
+                          ) : (
+                            <ESSULogo className="w-10 h-10" />
+                          )}
+                          <div>
+                            <h3 className="text-lg font-black tracking-wide text-yellow-400">
+                              {programName}
+                            </h3>
+                            <p className="text-xs text-emerald-100">
+                              {COLLEGES.find(c => c.id === activeCollege)?.name} • ESSU Salcedo Campus
+                            </p>
+                          </div>
+                        </div>
+                        <div className="bg-emerald-900 px-3 py-1 rounded text-xs font-bold text-yellow-300 border border-emerald-700">
+                          Total Subjects: {programItems.length}
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-emerald-50 dark:bg-slate-900 text-emerald-950 dark:text-slate-300 text-xs font-bold uppercase border-b border-emerald-200">
+                              <th className="py-3 px-4">Day & Time</th>
+                              <th className="py-3 px-4">Subject Code & Description</th>
+                              <th className="py-3 px-4 text-center">Units</th>
+                              <th className="py-3 px-4">Instructor / Professor</th>
+                              <th className="py-3 px-4">Room</th>
+                              <th className="py-3 px-4 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            {programItems.map((item) => (
+                              <tr key={item.id} className="hover:bg-emerald-50/50">
+                                <td className="py-3 px-4 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                                  <div className="text-xs text-emerald-800 font-extrabold uppercase">{item.day}</div>
+                                  <div className="text-slate-900 dark:text-white">{item.timeSpan}</div>
+                                </td>
+                                <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-100">
+                                  <span className={`inline-block px-2.5 py-1 rounded border text-xs font-bold mr-2 ${item.color}`}>
+                                    {item.subject}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-center font-bold text-slate-600">{item.units || '-'}</td>
+                                <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{item.instructor}</td>
+                                <td className="py-3 px-4">
+                                  <span className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-300 text-xs font-bold">
+                                    {item.room}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <button onClick={() => openEditModal(item)} className="text-amber-600 hover:underline text-xs font-bold">Edit</button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="bg-emerald-50/40 dark:bg-slate-900/60 p-4 border-t text-xs grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-600">
+                        <div>
+                          <span className="font-bold block text-emerald-950 dark:text-slate-200">Prepared by:</span>
+                          PROGRAM HEAD
+                          <div className="text-[10px] text-slate-500">{activeCollege} Department</div>
+                        </div>
+                        <div>
+                          <span className="font-bold block text-emerald-950 dark:text-slate-200">Recommending Approval:</span>
+                          DEAN OF {activeCollege}
+                          <div className="text-[10px] text-slate-500">{COLLEGES.find(c => c.id === activeCollege)?.name}</div>
+                        </div>
+                        <div>
+                          <span className="font-bold block text-emerald-950 dark:text-slate-200">Approved:</span>
+                          EDUARDO A. CABLAO, JR., PhD
+                          <div className="text-[10px] text-slate-500">Campus Administrator</div>
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {programSubTab === 'faculty' && (
+              <div className="space-y-6">
+                {facultyList.filter(f => f !== 'All' && (selectedFaculty === 'All' || f === selectedFaculty)).map((facultyName) => {
+                  const facultyItems = filteredSchedule.filter(item => item.instructor === facultyName);
+                  if (facultyItems.length === 0) return null;
+
+                  const totalUnits = facultyItems.reduce((acc, curr) => acc + (parseInt(curr.units, 10) || 0), 0);
+
+                  return (
+                    <div key={facultyName} className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                      <div className="bg-gradient-to-r from-emerald-950 via-green-900 to-emerald-900 text-white p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b-2 border-yellow-400">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-yellow-400 text-emerald-950 flex items-center justify-center font-black text-lg border border-white">
+                            {facultyName.charAt(0)}
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-white">{facultyName}</h3>
+                            <p className="text-xs text-emerald-100">ESSU Salcedo Faculty Member</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-emerald-200 font-bold uppercase">Assigned Workload</div>
+                          <div className="text-base font-extrabold text-yellow-400">{totalUnits} Academic Units</div>
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-emerald-50 dark:bg-slate-900 text-emerald-950 text-xs font-bold uppercase border-b border-emerald-200">
+                              <th className="py-3 px-4">Day</th>
+                              <th className="py-3 px-4">Time Slot</th>
+                              <th className="py-3 px-4">Program / Section</th>
+                              <th className="py-3 px-4">Subject Description</th>
+                              <th className="py-3 px-4 text-center">Units</th>
+                              <th className="py-3 px-4">Room</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            {facultyItems.map((item) => (
+                              <tr key={item.id} className="hover:bg-emerald-50/40">
+                                <td className="py-3 px-4 font-bold text-emerald-800">{item.day}</td>
+                                <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{item.timeSpan}</td>
+                                <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{item.program}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`inline-block px-2.5 py-1 rounded border text-xs font-semibold ${item.color}`}>
+                                    {item.subject}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-center font-bold text-slate-600">{item.units}</td>
+                                <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{item.room}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {programSubTab === 'timetable' && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 p-6 shadow-sm overflow-x-auto">
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Master Weekly Timetable Matrix — {activeCollege}
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 min-w-[900px]">
+                  {daysOfWeek.map((day) => {
+                    const dayClasses = filteredSchedule.filter(item => item.day === day);
+                    return (
+                      <div key={day} className="bg-emerald-50/30 dark:bg-slate-900/50 rounded-lg border border-emerald-100 dark:border-slate-700 p-3 flex flex-col">
+                        <div className="bg-emerald-900 text-yellow-400 text-center font-black py-2 rounded mb-3 text-xs uppercase tracking-wider border border-emerald-800">
+                          {day} ({dayClasses.length})
+                        </div>
+                        <div className="space-y-3 flex-1">
+                          {dayClasses.map((item) => (
+                            <div key={item.id} className={`p-2.5 rounded-lg border text-xs shadow-sm ${item.color} space-y-1 relative group`}>
+                              <div className="font-extrabold text-slate-900 dark:text-white leading-tight">{item.subject}</div>
+                              <div className="text-[11px] font-bold text-slate-700">{item.timeSpan}</div>
+                              <div className="text-[11px] text-slate-600">{item.instructor}</div>
+                              <div className="flex justify-between items-center text-[10px] text-slate-500 mt-1 pt-1 border-t">
+                                <span className="font-bold text-emerald-800">{item.room}</span>
+                                <button onClick={() => openEditModal(item)} className="text-amber-700 font-bold hover:underline">Edit</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {programSubTab === 'conflicts' && (
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-emerald-100 dark:border-slate-700 shadow-sm">
+                  <div className="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-4">
+                    <ShieldAlert className="w-6 h-6 text-red-600" />
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                        Cross-College Automated Schedule Conflict Detector
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Calculates instructor time overlaps even across different colleges (COE, COEd, CCS, CANS).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-slate-300 mb-3 flex items-center space-x-2">
+                      <User className="w-4 h-4 text-red-600" />
+                      <span>Faculty Overlap Conflicts ({conflicts.facultyConflicts.length})</span>
+                    </h3>
+
+                    {conflicts.facultyConflicts.length === 0 ? (
+                      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 rounded-lg text-emerald-900 dark:text-emerald-300 text-sm flex items-center space-x-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+                        <span>No faculty teaching overlaps found across all college schedules!</span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {conflicts.facultyConflicts.map((c, idx) => (
+                          <div key={idx} className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-600 p-4 rounded-r-lg shadow-sm">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-black text-red-700 dark:text-red-400 text-base">{c.instructor} — {c.day}</span>
+                              <span className="text-xs font-bold text-red-600 uppercase">High Conflict Risk</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-white dark:bg-slate-800 p-3 rounded border border-red-200">
+                              <div>
+                                <div className="text-xs text-slate-500 font-bold">Class #1 ({c.college1})</div>
+                                <div className="font-semibold">{c.course1}</div>
+                                <div className="text-xs text-slate-600">{c.program1} • {c.time1} • {c.room1}</div>
+                              </div>
+                              <div className="border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-3">
+                                <div className="text-xs text-slate-500 font-bold">Class #2 ({c.college2})</div>
+                                <div className="font-semibold">{c.course2}</div>
+                                <div className="text-xs text-slate-600">{c.program2} • {c.time2} • {c.room2}</div>
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            )}
+
           </div>
         )}
 
-        {/* ==================== 4. WEEKLY TIMETABLE MATRIX ==================== */}
-        {activeTab === 'timetable' && (
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-slate-700 p-6 shadow-sm overflow-x-auto">
+        {/* ==================== TAB 3: SYSTEM SETTINGS ==================== */}
+        {mainTab === 'settings' && (
+          <div className="space-y-6">
             
-            <div className="mb-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Master Visual Timetable Grid
-              </h3>
-              <p className="text-xs text-slate-500">
-                Weekly overview of scheduled classes grouped by day.
-              </p>
-            </div>
+            {!isSettingsUnlocked ? (
+              /* PASSWORD PROMPT FOR SYSTEM SETTINGS */
+              <div className="max-w-md mx-auto bg-white dark:bg-slate-800 p-8 rounded-2xl border-2 border-yellow-400 shadow-xl text-center space-y-4 my-8">
+                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto border-2 border-yellow-400 shadow">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-emerald-950 dark:text-yellow-400">
+                    Restricted Area: System Settings
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                    Please enter the administrator password to configure system settings, classrooms, sections, and branding logo.
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 min-w-[900px]">
-              {daysOfWeek.map((day) => {
-                const dayClasses = filteredSchedule.filter(item => item.day === day);
+                <form onSubmit={handleUnlockSettings} className="space-y-3 pt-2">
+                  <div className="relative text-left">
+                    <Key className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                    <input
+                      type="password"
+                      required
+                      placeholder="Enter administrator password..."
+                      value={settingsPasswordInput}
+                      onChange={(e) => {
+                        setSettingsPasswordInput(e.target.value);
+                        setSettingsPasswordError('');
+                      }}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-600"
+                    />
+                  </div>
+                  {settingsPasswordError && (
+                    <p className="text-xs text-red-600 font-bold">{settingsPasswordError}</p>
+                  )}
+                  <p className="text-[10px] text-slate-400">Default Key: <code className="font-mono text-emerald-700 font-bold">essusalcedo</code></p>
+                  
+                  <button
+                    type="submit"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black py-2.5 rounded-lg text-sm shadow transition flex items-center justify-center space-x-2">
+                    <Shield className="w-4 h-4" />
+                    <span>Unlock System Settings</span>
+                  </button>
+                </form>
+              </div>
+            ) : (
+              /* UNLOCKED SYSTEM SETTINGS CONTENT */
+              <div className="space-y-6">
+                
+                <div className="flex justify-between items-center bg-emerald-900 text-white p-4 rounded-xl border-l-4 border-yellow-400 shadow-sm">
+                  <div className="flex items-center space-x-2 text-xs font-bold text-yellow-300">
+                    <Shield className="w-4 h-4" />
+                    <span>Administrator Session Active</span>
+                  </div>
+                  <button
+                    onClick={() => setIsSettingsUnlocked(false)}
+                    className="bg-emerald-950 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-700">
+                    Lock Settings
+                  </button>
+                </div>
 
-                return (
-                  <div key={day} className="bg-emerald-50/30 dark:bg-slate-900/50 rounded-lg border border-emerald-100 dark:border-slate-700 p-3 flex flex-col">
-                    <div className="bg-emerald-900 text-yellow-400 text-center font-black py-2 rounded mb-3 text-xs uppercase tracking-wider border border-emerald-800">
-                      {day} ({dayClasses.length})
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-emerald-200 dark:border-slate-700 shadow-sm space-y-6">
+                  <h2 className="text-lg font-black text-emerald-950 dark:text-yellow-400 flex items-center space-x-2 border-b pb-3">
+                    <Settings className="w-5 h-5 text-emerald-700" />
+                    <span>ESSU Salcedo Schedule System Configuration</span>
+                  </h2>
+
+                  {/* 1. BRANDING & LOGO MANAGEMENT */}
+                  <div className="bg-emerald-50/50 dark:bg-slate-900/60 p-5 rounded-xl border border-emerald-200 dark:border-slate-700 space-y-4">
+                    <div className="flex items-center space-x-2 text-emerald-950 dark:text-slate-100 font-black text-sm uppercase">
+                      <ImageIcon className="w-4 h-4 text-emerald-700" />
+                      <span>Institutional Seal / Campus Logo Configuration</span>
                     </div>
 
-                    <div className="space-y-3 flex-1">
-                      {dayClasses.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400 text-xs italic">
-                          No classes scheduled
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                      <div className="w-24 h-24 bg-white rounded-full border-4 border-yellow-400 shadow-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {customLogoUrl ? (
+                          <img src={customLogoUrl} alt="ESSU Seal" className="w-full h-full object-cover" />
+                        ) : (
+                          <ESSULogo className="w-20 h-20" />
+                        )}
+                      </div>
+
+                      <div className="space-y-3 text-center sm:text-left flex-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
+                          Upload your custom campus logo (PNG, JPG, SVG, WebP). This logo will appear across all header navigation bars, schedule section exports, and print reports.
+                        </p>
+                        
+                        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                          <label className="cursor-pointer bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition">
+                            <Upload className="w-4 h-4 text-yellow-400" />
+                            <span>Upload New Logo</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                          </label>
+
+                          {customLogoUrl && (
+                            <button
+                              onClick={() => {
+                                setCustomLogoUrl(null);
+                                setUploadStatus({ type: 'success', message: 'Logo reset to default ESSU vector seal.' });
+                              }}
+                              className="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+                              Reset to Default Seal
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        dayClasses.map((item) => (
-                          <div 
-                            key={item.id} 
-                            className={`p-2.5 rounded-lg border text-xs shadow-sm ${item.color} space-y-1`}>
-                            <div className="font-extrabold text-slate-900 dark:text-white leading-tight">
-                              {item.subject}
-                            </div>
-                            <div className="flex items-center text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {item.timeSpan}
-                            </div>
-                            <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                              <User className="w-3 h-3 inline mr-1" />
-                              {item.instructor}
-                            </div>
-                            <div className="flex justify-between items-center text-[10px] text-slate-500 mt-1 pt-1 border-t border-slate-200 dark:border-slate-700">
-                              <span className="font-bold text-emerald-800">{item.program.split(' ').slice(-2).join(' ')}</span>
-                              <span className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border">{item.room}</span>
-                            </div>
-                          </div>
-                        ))
-                      )}
+                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    {/* 2. CLASSROOM MANAGEMENT */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2 text-emerald-900 dark:text-slate-200 font-bold border-b pb-2">
+                        <Building className="w-4 h-4 text-emerald-700" />
+                        <span>Registered Classrooms & Laboratories</span>
+                      </div>
+
+                      <form onSubmit={handleAddClassroom} className="flex space-x-2">
+                        <input
+                          type="text"
+                          placeholder="Add new room (e.g. Rm 402, Lab 4)..."
+                          value={newRoomInput}
+                          onChange={(e) => setNewRoomInput(e.target.value)}
+                          className="flex-1 bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                        />
+                        <button
+                          type="submit"
+                          className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black px-4 py-2 rounded-lg text-xs flex items-center space-x-1 shadow">
+                          <Plus className="w-4 h-4" />
+                          <span>Add Room</span>
+                        </button>
+                      </form>
+
+                      <div className="space-y-2 max-h-72 overflow-y-auto pr-1 pt-1">
+                        {customClassrooms.map(room => (
+                          <div key={room} className="flex items-center justify-between bg-emerald-50/50 dark:bg-slate-900 border border-emerald-200 dark:border-slate-700 p-2 rounded-lg text-xs font-bold text-emerald-950 dark:text-slate-200">
+                            {editingRoom === room ? (
+                              <div className="flex items-center space-x-2 w-full">
+                                <input
+                                  type="text"
+                                  value={editRoomInputValue}
+                                  onChange={(e) => setEditRoomInputValue(e.target.value)}
+                                  className="flex-1 bg-white dark:bg-slate-800 border border-emerald-400 rounded px-2 py-1 text-xs"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => handleSaveEditRoom(room)}
+                                  className="p-1.5 bg-emerald-700 text-white rounded hover:bg-emerald-800">
+                                  <Check className="w-3.5 h-3.5" />
+                                </button>
+                    {/* 3. PROGRAM & SECTIONS MANAGEMENT MAPPED TO COLLEGES */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <div className="flex items-center space-x-2 text-emerald-900 dark:text-slate-200 font-bold">
+                          <School className="w-4 h-4 text-emerald-700" />
+                          <span>Academic Programs & Sections Registry</span>
+                        </div>
+                        <select
+                          value={settingsSectionFilter}
+                          onChange={(e) => setSettingsSectionFilter(e.target.value)}
+                          className="bg-slate-50 dark:bg-slate-900 border text-xs font-bold rounded px-2 py-1">
+                          <option value="All">All Colleges</option>
+                          {COLLEGES.map(c => <option key={c.id} value={c.id}>{c.code}</option>)}
+                        </select>
+                      </div>
+
+                      <form onSubmit={handleAddSection} className="space-y-2 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Register New Program / Section:</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <select
+                            value={newSectionCollege}
+                            onChange={(e) => setNewSectionCollege(e.target.value)}
+                            className="bg-white dark:bg-slate-800 border rounded-lg p-2 text-xs font-bold text-emerald-800 dark:text-yellow-400">
+                            {COLLEGES.map(c => <option key={c.id} value={c.id}>{c.code} ({c.name})</option>)}
+                          </select>
+                          <input
+                            type="text"
+                            placeholder="e.g. BACHELOR OF SCIENCE IN COMPUTER ENGINEERING I - 2"
+                            value={newSectionInput}
+                            onChange={(e) => setNewSectionInput(e.target.value)}
+                            className="sm:col-span-2 bg-white dark:bg-slate-800 border rounded-lg p-2 text-xs"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black px-4 py-2 rounded-lg text-xs flex items-center space-x-1 shadow w-full justify-center">
+                          <Plus className="w-4 h-4" />
+                          <span>Register Section to {newSectionCollege}</span>
+                        </button>
+                      </form>
+
+                      <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                        {customSections
+                          .filter(sec => settingsSectionFilter === 'All' || sec.collegeId === settingsSectionFilter)
+                          .map(secObj => (
+                          <div key={secObj.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border text-xs font-semibold">
+                            {editingSection === secObj.id ? (
+                              <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                                <select
+                                  value={editSectionCollegeValue}
+                                  onChange={(e) => setEditSectionCollegeValue(e.target.value)}
+                                  className="bg-white dark:bg-slate-800 border border-emerald-400 rounded px-2 py-1 text-xs font-bold">
+                                  {COLLEGES.map(c => <option key={c.id} value={c.id}>{c.code}</option>)}
+                                </select>
+                                <input
+                                  type="text"
+                                  value={editSectionInputValue}
+                                  onChange={(e) => setEditSectionInputValue(e.target.value)}
+                                  className="flex-1 bg-white dark:bg-slate-800 border border-emerald-400 rounded px-2 py-1 text-xs"
+                                  autoFocus
+                                />
+                                <div className="flex items-center space-x-1">
+                                  <button
+                                    onClick={() => handleSaveEditSection(secObj)}
+                                    className="p-1.5 bg-emerald-700 text-white rounded hover:bg-emerald-800">
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingSection(null)}
+                                    className="p-1.5 bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-white rounded">
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex items-center space-x-2">
+                                  <span className="bg-emerald-950 text-yellow-400 text-[10px] font-black px-2 py-0.5 rounded">
+                                    {secObj.collegeId}
+                                  </span>
+                                  <span className="text-slate-800 dark:text-slate-200">{secObj.name}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <button
+                                    onClick={() => handleStartEditSection(secObj)}
+                                    className="p-1 text-slate-400 hover:text-amber-600 transition"
+                                    title="Edit Section Name / Mapped College">
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteSection(secObj.id)}
+                                    className="p-1 text-slate-400 hover:text-red-600 transition"
+                                    title="Delete Section">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* DANGER ZONE: SECURITY WIPE ALL SCHEDULES */}
+                <div className="bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900 p-6 space-y-3">
+                  <div className="flex items-center space-x-2 text-red-700 dark:text-red-400 font-black text-sm uppercase">
+                    <Lock className="w-4 h-4" />
+                    <span>Protected Database Actions</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Authorized administrators can purge all class schedule records. Action requires system password (<code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-red-700">essusalcedo</code>).
+                  </p>
+                  <button
+                    onClick={() => setIsDeleteAllModalOpen(true)}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition">
+                    <Trash2 className="w-4 h-4" />
+                    <span>Wipe All Schedules (Requires Password)</span>
+                  </button>
+                </div>
+
+              </div>
+            )}
+
           </div>
         )}
 
       </main>
 
+      {/* CREATE / EDIT SCHEDULE MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl border-2 border-yellow-400 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="text-lg font-black text-emerald-950 dark:text-yellow-400 flex items-center space-x-2">
+                <Edit3 className="w-5 h-5 text-emerald-700" />
+                <span>{editingItem ? 'Edit Class Schedule Slot' : 'Add New Class Slot'}</span>
+              </h3>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSchedule} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">College:</label>
+                  <select
+                    value={formData.college}
+                    onChange={(e) => {
+                      const newCol = e.target.value;
+                      const collegeSecs = customSections.filter(s => s.collegeId === newCol);
+                      const defaultProg = collegeSecs.length > 0 ? collegeSecs[0].name : '';
+                      setFormData({...formData, college: newCol, program: defaultProg });
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm">
+                    {COLLEGES.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Program / Section ({formData.college}):</label>
+                  <select
+                    value={formData.program}
+                    onChange={(e) => setFormData({...formData, program: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm">
+                    {customSections
+                      .filter(s => s.collegeId === formData.college)
+                      .map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase mb-1">Subject Code & Title:</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. CPE 121 Object-Oriented Programming"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Instructor / Professor:</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Dr. Joseph G. Acebo"
+                    value={formData.instructor}
+                    onChange={(e) => setFormData({...formData, instructor: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Academic Units:</label>
+                  <input
+                    type="text"
+                    value={formData.units}
+                    onChange={(e) => setFormData({...formData, units: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Day:</label>
+                  <select
+                    value={formData.day}
+                    onChange={(e) => setFormData({...formData, day: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm">
+                    {daysOfWeek.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Start Time:</label>
+                  <input
+                    type="text"
+                    placeholder="08:00"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">End Time:</label>
+                  <input
+                    type="text"
+                    placeholder="09:30"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({...formData, endTime: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase mb-1">Room Assignment:</label>
+                <select
+                  value={formData.room}
+                  onChange={(e) => setFormData({...formData, room: e.target.value})}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2 text-sm">
+                  {customClassrooms.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-xs font-black rounded-lg shadow">
+                  Save Schedule
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE ALL SCHEDULES MODAL (PASSWORD PROTECTED: essusalcedo) */}
+      {isDeleteAllModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl border-2 border-red-600 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="text-lg font-black text-red-600 flex items-center space-x-2">
+                <Lock className="w-5 h-5" />
+                <span>Clear All Schedule Database</span>
+              </h3>
+              <button onClick={() => setIsDeleteAllModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              Please enter the administrator authorization password to delete all scheduled courses across all colleges.
+            </p>
+
+            <form onSubmit={handleDeleteAllSchedules} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">
+                  Password:
+                </label>
+                <div className="relative">
+                  <Key className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter password..."
+                    value={deleteAllPassword}
+                    onChange={(e) => {
+                      setDeleteAllPassword(e.target.value);
+                      setPasswordError('');
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+                {passwordError && (
+                  <p className="text-xs text-red-600 font-bold mt-1.5">{passwordError}</p>
+                )}
+                <p className="text-[10px] text-slate-400 mt-1">Default Key: <code className="font-mono text-emerald-700 font-bold">essusalcedo</code></p>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteAllModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow flex items-center space-x-1">
+                  <Trash2 className="w-4 h-4" />
+                  <span>Confirm Delete All</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE SINGLE ITEM CONFIRMATION MODAL */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl border-2 border-red-500 space-y-4">
+            <h3 className="text-lg font-bold text-red-600 flex items-center space-x-2">
+              <AlertTriangle className="w-5 h-5" />
+              <span>Confirm Schedule Deletion</span>
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Are you sure you want to remove this schedule slot from the master database?
+            </p>
+            <div className="flex justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteSchedule(deleteConfirmId)}
+                className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow">
+                Delete Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FOOTER */}
       <footer className="bg-emerald-950 text-emerald-200 text-xs py-6 border-t-2 border-yellow-400 mt-auto">
         <div className="max-w-7xl mx-auto px-4 text-center space-y-2">
           <p className="font-bold text-yellow-400">
-            Eastern Samar State University - Salcedo Campus • College of Engineering (COE)
+            Eastern Samar State University - Salcedo Campus • Colleges of Engineering, Education, Computer Studies & Agriculture
           </p>
           <p className="text-emerald-300/80">
-            Class Scheduling & Automated Conflict Detection System © 2026. Designed for BSCpE & Academic Administration.
+            Multi-College Class Program & Conflict Management System © 2026.
           </p>
         </div>
       </footer>
